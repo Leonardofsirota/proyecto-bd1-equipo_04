@@ -6,11 +6,11 @@
         "id": "0b8e49ba-0b59-4687-b0f6-92f615504f91",
         "type": "Table",
         "position": {
-          "x": -167.42780245414627,
-          "y": 588.0940222884631
+          "x": -298.7230495997784,
+          "y": 461.7006831920637
         },
         "data": {
-          "label": "USUARIOS",
+          "label": "USUARIO",
           "isConnectable": false,
           "columns": [
             {
@@ -18,61 +18,71 @@
               "name": "usuario_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "54081ce8-8e72-436a-bc92-82fa5e57ebab",
               "name": "usuario_estado",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false
             },
             {
               "id": "a4290908-f34f-4893-8123-46024c2a1e35",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false
             },
             {
               "id": "bc0c0010-af96-4dae-86b6-873d4b6545ff",
               "name": "apellido",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false
             },
             {
               "id": "8ef28a0f-2934-4085-8468-53370b20d256",
               "name": "dni",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": true
             },
             {
               "id": "83ffc825-ad12-40d6-aa6a-c8de007060ef",
               "name": "email",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": true
             },
             {
               "id": "a66df443-4a94-4535-bec5-00297f210099",
               "name": "telefono",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false
             },
             {
               "id": "f0a2e55c-6447-4274-9a72-7e5ffc36a718",
               "name": "fecha_nacimiento",
-              "type": "INT",
-              "isPrimaryKey": false
+              "type": "DATE",
+              "isPrimaryKey": false,
+              "isUnique": false
             },
             {
               "id": "cb568211-a406-4cfe-a539-6da8d4482268",
               "name": "password_hash",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false
             },
             {
               "id": "5ec72255-a2a8-49b4-9cb7-c0087c2d0a6b",
               "name": "imagen_url",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false
             },
             {
               "id": "72e6a9eb-31b8-4fc7-a758-5ba143138d5b",
@@ -90,7 +100,8 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             }
           ],
           "numberOfGroups": 0,
@@ -98,7 +109,7 @@
         },
         "measured": {
           "width": 240,
-          "height": 302
+          "height": 304
         },
         "selected": false,
         "dragging": false
@@ -107,11 +118,11 @@
         "id": "86c71f01-e0ad-4b5a-99ca-e94c0e67234f",
         "type": "Table",
         "position": {
-          "x": -551.0308306088235,
-          "y": 838.4663828269712
+          "x": -297.6724197005909,
+          "y": 783.0406115436078
         },
         "data": {
-          "label": "USUARIO_ROLES",
+          "label": "USUARIO_ROL",
           "isConnectable": false,
           "columns": [
             {
@@ -119,13 +130,15 @@
               "name": "usuario_rol_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "8149daf1-f7c5-47dd-834f-8de9ab4d30a8",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": true
             }
           ],
           "numberOfGroups": 0,
@@ -142,11 +155,11 @@
         "id": "7bfe6d80-d308-4f20-9639-695e751948e1",
         "type": "Table",
         "position": {
-          "x": -547.4391157231646,
-          "y": 586.5171462071648
+          "x": -762.0878993071788,
+          "y": 671.1724579469019
         },
         "data": {
-          "label": "DIRECCIONES",
+          "label": "DIRECCION",
           "isConnectable": false,
           "columns": [
             {
@@ -154,19 +167,34 @@
               "name": "direccion_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "position": 0
             },
             {
               "id": "6d9fe178-9477-4ce3-9be4-9c95ab8f2a14",
               "name": "calle",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "position": 1
             },
             {
               "id": "1aad9878-30d5-4b91-9ae1-07243b8ba349",
               "name": "altura",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "position": 2
+            },
+            {
+              "id": "a402f082-fa8b-4f9c-afea-42504e55aee1",
+              "name": "piso",
+              "type": "INT",
+              "position": 3
+            },
+            {
+              "id": "ebaefbac-72af-4bef-93f1-ee6a9de465e9",
+              "name": "departamento",
+              "type": "INT",
+              "position": 4
             },
             {
               "id": "19ae62b6-3142-40ae-bffb-50a305ca0024",
@@ -184,7 +212,9 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "isPrimaryKey": false,
+              "position": 5
             },
             {
               "id": "fk_c699b0a1-e38f-441c-80f0-59dd452ac74e",
@@ -201,7 +231,21 @@
                     "type": "INT"
                   }
                 ]
-              }
+              },
+              "isPrimaryKey": false,
+              "position": 6
+            },
+            {
+              "id": "7417b227-a318-474d-a83a-507299653228",
+              "name": "codigo_postal",
+              "type": "INT",
+              "position": 6
+            },
+            {
+              "id": "ff0fbd78-11f9-4b07-ba64-cb1cc7188326",
+              "name": "referencia",
+              "type": "INT",
+              "position": 6
             }
           ],
           "numberOfGroups": 0,
@@ -210,7 +254,7 @@
         },
         "measured": {
           "width": 240,
-          "height": 152
+          "height": 253
         },
         "selected": false,
         "dragging": false
@@ -219,11 +263,11 @@
         "id": "1ce0941f-e98c-4527-bb44-af0b9164edc6",
         "type": "Table",
         "position": {
-          "x": -1237.7607900891076,
-          "y": 588.3017438169335
+          "x": -294.86140761569516,
+          "y": 1108.8283050825094
         },
         "data": {
-          "label": "PROVINCIAS",
+          "label": "PROVINCIA",
           "isConnectable": false,
           "columns": [
             {
@@ -231,13 +275,15 @@
               "name": "provincia_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "b4d3dfb9-a040-4521-9bf2-2cf7e99802ff",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": true
             }
           ],
           "numberOfGroups": 0,
@@ -254,11 +300,11 @@
         "id": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e",
         "type": "Table",
         "position": {
-          "x": -912.8318113997432,
-          "y": 588.7117637566606
+          "x": -293.289226414625,
+          "y": 998.4038603750914
         },
         "data": {
-          "label": "CIUDADES",
+          "label": "CIUDAD",
           "isConnectable": false,
           "columns": [
             {
@@ -266,19 +312,18 @@
               "name": "ciudad_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "04e3a273-a6a5-4320-bf41-97be4747ee67",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
-            },
-            {
-              "id": "3b289c6b-81d4-4d8f-9902-6582fba5b815",
-              "name": "codigo_postal",
-              "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false,
+              "groupNumbers": [
+                1
+              ]
             },
             {
               "id": "72b04179-e6ea-41b1-b89c-9b3d7717c71f",
@@ -296,15 +341,19 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false,
+              "groupNumbers": [
+                1
+              ]
             }
           ],
           "numberOfGroups": 0,
           "isSelected": false
         },
         "measured": {
-          "width": 240,
-          "height": 127
+          "width": 253,
+          "height": 103
         },
         "selected": false,
         "dragging": false
@@ -317,7 +366,7 @@
           "y": 221.04465409992855
         },
         "data": {
-          "label": "PEDIDOS",
+          "label": "PEDIDO",
           "isConnectable": false,
           "columns": [
             {
@@ -325,13 +374,24 @@
               "name": "pedido_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "position": 0,
+              "isUnique": false
+            },
+            {
+              "id": "02686695-af0f-4fc2-9ac9-246f7ea2c34b",
+              "name": "importe",
+              "type": "FLOAT",
+              "position": 1,
+              "isUnique": false
             },
             {
               "id": "6ed62574-5f58-489e-ad92-a5cafcd64a1b",
               "name": "fecha_pedido",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "position": 2,
+              "isUnique": false
             },
             {
               "id": "fa579644-5de0-4606-90fc-daff17338474",
@@ -349,7 +409,9 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "position": 3,
+              "isUnique": false
             },
             {
               "id": "ef4c2676-cc7f-41ae-902e-aa05e9066a61",
@@ -367,7 +429,27 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "position": 4,
+              "isUnique": false
+            },
+            {
+              "id": "fk_046c0b1a-1f18-4696-ab7a-bcf2df9fe0e3",
+              "name": "fk_DESTINO",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "aee77b1d-7a11-4595-b1e1-b1712ee1d7c6",
+                "sourceTableId": "fe449f3c-8895-470a-afb8-0179ac0652ab",
+                "columns": [
+                  {
+                    "id": "fk_35dedb9d-be29-434f-8dfb-9ec432d34e51",
+                    "name": "destino_id",
+                    "type": "INT"
+                  }
+                ]
+              },
+              "isUnique": true
             }
           ],
           "numberOfGroups": 0,
@@ -375,7 +457,7 @@
         },
         "measured": {
           "width": 240,
-          "height": 127
+          "height": 178
         },
         "selected": false,
         "dragging": false
@@ -388,7 +470,7 @@
           "y": 377.52231661655014
         },
         "data": {
-          "label": "PEDIDO_ESTADOS",
+          "label": "PEDIDO_ESTADO",
           "isConnectable": false,
           "columns": [
             {
@@ -396,19 +478,24 @@
               "name": "pedido_estado_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "4265fd83-5f86-4224-95c1-aba174627a1a",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "groupNumbers": [],
+              "isUnique": true
             },
             {
               "id": "d5ad2432-e102-49d3-9185-ac1bc98f5c1b",
               "name": "descripcion",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "groupNumbers": [],
+              "isUnique": false
             }
           ],
           "numberOfGroups": 0,
@@ -416,7 +503,7 @@
         },
         "measured": {
           "width": 240,
-          "height": 101
+          "height": 102
         },
         "selected": false,
         "dragging": false
@@ -429,7 +516,7 @@
           "y": 13.597573204877914
         },
         "data": {
-          "label": "PAGOS",
+          "label": "PAGO",
           "isConnectable": false,
           "columns": [
             {
@@ -437,19 +524,30 @@
               "name": "pago_id",
               "type": "INT",
               "isPrimaryKey": true,
+              "isOptional": false,
+              "position": 0
+            },
+            {
+              "id": "4f31c708-a592-4e06-9b5c-4046297a518c",
+              "name": "importe",
+              "type": "FLOAT",
+              "position": 1,
               "isOptional": false
             },
             {
-              "id": "397f29de-f73f-4ba8-8984-31e00d140281",
-              "name": "importe",
+              "id": "566588b4-7a06-4924-aef6-9b4961930dd1",
+              "name": "fecha_creacion",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "position": 2,
+              "isOptional": false
             },
             {
-              "id": "566588b4-7a06-4924-aef6-9b4961930dd1",
+              "id": "398809f6-6621-419e-ac24-c7e10068cc18",
               "name": "fecha_pago",
               "type": "INT",
-              "isPrimaryKey": false
+              "position": 3,
+              "isOptional": false
             },
             {
               "id": "9cc52fff-5332-4852-914b-d315b895acb2",
@@ -467,7 +565,8 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "position": 4
             },
             {
               "id": "6582427c-6c19-4a84-9902-d7fe9fb8061b",
@@ -485,7 +584,8 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "position": 5
             },
             {
               "id": "a4ea647c-aae8-4b8c-b94f-a530a8d5172a",
@@ -503,7 +603,8 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "position": 6
             }
           ],
           "numberOfGroups": 0,
@@ -511,7 +612,7 @@
         },
         "measured": {
           "width": 240,
-          "height": 177
+          "height": 203
         },
         "selected": false,
         "dragging": false
@@ -524,7 +625,7 @@
           "y": 12.264131676886404
         },
         "data": {
-          "label": "PAGO_ESTADOS",
+          "label": "PAGO_ESTADO",
           "isConnectable": false,
           "columns": [
             {
@@ -532,13 +633,15 @@
               "name": "pago_estado_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "7dc99b4c-64aa-4e48-861a-e7eb236c3f29",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": true
             }
           ],
           "numberOfGroups": 0,
@@ -559,7 +662,7 @@
           "y": 175.28680988197019
         },
         "data": {
-          "label": "PAGO_METODOS",
+          "label": "PAGO_METODO",
           "isConnectable": false,
           "columns": [
             {
@@ -567,13 +670,15 @@
               "name": "pago_metodo_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "25407348-539f-4794-a27d-2b32be9cadcc",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": true
             }
           ],
           "numberOfGroups": 0,
@@ -590,11 +695,11 @@
         "id": "63977999-35de-44f2-a771-1a363620989f",
         "type": "Table",
         "position": {
-          "x": -170.64576812810418,
-          "y": 1.9212984638963029
+          "x": -237.87773522658838,
+          "y": 27.592645891933394
         },
         "data": {
-          "label": "PEDIDO_DETALLES",
+          "label": "PEDIDO_DETALLE",
           "isConnectable": false,
           "columns": [
             {
@@ -602,19 +707,22 @@
               "name": "pedido_detalle_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "96a518eb-526f-4667-95a9-6778a3ea7075",
               "name": "cantidad",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false
             },
             {
               "id": "25312b17-05b7-45ca-a161-552dcd6a89cd",
               "name": "precio_unitario",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false
             },
             {
               "id": "96e6cd3a-8736-4d64-9539-bb902339490b",
@@ -632,33 +740,39 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false,
+              "groupNumbers": [
+                1
+              ]
             },
             {
-              "id": "48302175-d9e2-4d30-9097-1257d26ac3e6",
-              "name": "fk_LIBROS",
+              "id": "fk_b805f0ee-0726-4519-92f3-8df126cbc231",
+              "name": "fk_PUBLICACION",
               "type": "None",
               "isForeignKey": true,
               "foreignKeyProps": {
-                "foreignKeyGroupId": "45506b0b-a90d-453e-ab6b-9f4d3423d447",
-                "sourceTableId": "c04ca5e7-fa8f-4dfe-91a8-54a381f1722e",
+                "foreignKeyGroupId": "52b199c1-4b5f-4099-9b94-edc6752791be",
+                "sourceTableId": "edd474aa-85f5-4fbe-abff-8220ab4c2c3c",
                 "columns": [
                   {
-                    "id": "fk_c20006d1-965e-41c7-9414-81880b017016",
-                    "name": "libro_id",
+                    "id": "fk_df314c7f-cc63-4864-966c-2f1f7a7e5451",
+                    "name": "publicacion_id",
                     "type": "INT"
                   }
                 ]
               },
-              "isOptional": false
+              "groupNumbers": [
+                1
+              ]
             }
           ],
           "numberOfGroups": 0,
           "isSelected": false
         },
         "measured": {
-          "width": 240,
-          "height": 152
+          "width": 253,
+          "height": 153
         },
         "selected": false,
         "dragging": false
@@ -667,11 +781,11 @@
         "id": "c04ca5e7-fa8f-4dfe-91a8-54a381f1722e",
         "type": "Table",
         "position": {
-          "x": -606.9090929768507,
-          "y": -92.68355451653626
+          "x": -1089.631376858441,
+          "y": -13.978834318450884
         },
         "data": {
-          "label": "LIBROS",
+          "label": "LIBRO",
           "isConnectable": false,
           "columns": [
             {
@@ -679,55 +793,47 @@
               "name": "libro_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
-            },
-            {
-              "id": "0f002b66-d982-44e9-b661-4b41d0528aec",
-              "name": "anio_publicacion",
-              "type": "INT",
-              "isPrimaryKey": false
-            },
-            {
-              "id": "957c4c98-c0f0-4104-b200-7842c406eafb",
-              "name": "nro_paginas",
-              "type": "INT",
-              "isPrimaryKey": false
-            },
-            {
-              "id": "416b9501-668f-49cd-87cf-d8d45e5aa00e",
-              "name": "encuadernacion",
-              "type": "INT",
-              "isPrimaryKey": false
+              "isOptional": false,
+              "isUnique": false,
+              "position": 0
             },
             {
               "id": "7762569d-6c19-4c7c-a363-73fb6d814dbf",
               "name": "isbn",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": true,
+              "position": 1
             },
             {
               "id": "8e330969-0170-4de2-bee2-60ab017b0114",
               "name": "titulo",
-              "type": "INT",
-              "isPrimaryKey": false
+              "type": "VARCHAR(n)",
+              "isPrimaryKey": false,
+              "isUnique": false,
+              "position": 2
             },
             {
-              "id": "5ae4d1b3-ff54-44a1-8fc5-0c5ec1e0e4ad",
-              "name": "stock",
+              "id": "0f002b66-d982-44e9-b661-4b41d0528aec",
+              "name": "anio_publicacion",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false,
+              "position": 3
             },
             {
-              "id": "060ec9d6-b581-42ce-ac83-35432fda83ef",
-              "name": "condicion",
+              "id": "957c4c98-c0f0-4104-b200-7842c406eafb",
+              "name": "nro_paginas",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false,
+              "position": 4
             },
             {
-              "id": "85c30532-f031-4503-9afa-6df6f70b7335",
-              "name": "precio",
+              "id": "d5952c36-678c-4f55-b9e8-3f181386f906",
+              "name": "encuadernacion",
               "type": "INT",
-              "isPrimaryKey": false
+              "position": 5
             },
             {
               "id": "297ff619-c308-4973-8140-a5fcbc99a460",
@@ -745,7 +851,9 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false,
+              "position": 6
             },
             {
               "id": "fcc5585b-3816-405e-a47a-cffdbec3182a",
@@ -763,7 +871,9 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false,
+              "position": 7
             },
             {
               "id": "f0796f02-3baa-4ad9-9ae3-11390ff9cb94",
@@ -781,7 +891,9 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false,
+              "position": 8
             }
           ],
           "numberOfGroups": 0,
@@ -789,7 +901,7 @@
         },
         "measured": {
           "width": 240,
-          "height": 327
+          "height": 253
         },
         "selected": false,
         "dragging": false
@@ -798,11 +910,11 @@
         "id": "0fd0d908-2f80-4145-a52f-7157ce4764c5",
         "type": "Table",
         "position": {
-          "x": -1271.4585751965437,
-          "y": -96.7662942352836
+          "x": -1754.1808590781338,
+          "y": -18.06157403719823
         },
         "data": {
-          "label": "AUTORES",
+          "label": "AUTOR",
           "isConnectable": false,
           "columns": [
             {
@@ -810,13 +922,15 @@
               "name": "autor_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "aef713c2-09e5-4d23-9e9c-1b647553b82f",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": false
             }
           ],
           "numberOfGroups": 0,
@@ -833,11 +947,11 @@
         "id": "fae7313e-95df-4edc-95b2-0d2f3444fd5a",
         "type": "Table",
         "position": {
-          "x": -978.6104628388927,
-          "y": -94.61440659293433
+          "x": -1461.3327467204826,
+          "y": -15.909686394848967
         },
         "data": {
-          "label": "LIBRO_AUTORES",
+          "label": "LIBRO_AUTOR",
           "isConnectable": false,
           "columns": [
             {
@@ -845,7 +959,8 @@
               "name": "libro_autor_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "1da32f90-adbe-46aa-8f82-85fb64304928",
@@ -863,7 +978,11 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false,
+              "groupNumbers": [
+                1
+              ]
             },
             {
               "id": "75b80eab-6a9c-4dd0-8b15-55908f9582de",
@@ -881,15 +1000,19 @@
                   }
                 ]
               },
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false,
+              "groupNumbers": [
+                1
+              ]
             }
           ],
           "numberOfGroups": 0,
           "isSelected": false
         },
         "measured": {
-          "width": 240,
-          "height": 102
+          "width": 253,
+          "height": 103
         },
         "selected": false,
         "dragging": false
@@ -898,11 +1021,11 @@
         "id": "d22305f1-71c0-43a9-81ae-104505083fd1",
         "type": "Table",
         "position": {
-          "x": -978.7582668389628,
-          "y": 31.866971457029948
+          "x": -1461.4805507205529,
+          "y": 110.57169165511532
         },
         "data": {
-          "label": "CATEGORIAS",
+          "label": "CATEGORIA",
           "isConnectable": false,
           "columns": [
             {
@@ -910,13 +1033,15 @@
               "name": "categoria_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "db61e52c-1037-4ee3-8bb6-6dc852fbc712",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": true
             }
           ],
           "numberOfGroups": 0,
@@ -933,11 +1058,11 @@
         "id": "5c7ae458-7d61-44c6-9f19-6e4006c6131a",
         "type": "Table",
         "position": {
-          "x": -978.5734037198454,
-          "y": 132.0377712114432
+          "x": -1461.2956876014355,
+          "y": 210.74249140952855
         },
         "data": {
-          "label": "IDIOMAS",
+          "label": "IDIOMA",
           "isConnectable": false,
           "columns": [
             {
@@ -945,13 +1070,15 @@
               "name": "idioma_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "f1f4e44a-1769-423e-812b-f9fffcb0a80d",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": true
             }
           ],
           "numberOfGroups": 0,
@@ -968,11 +1095,11 @@
         "id": "648ceb41-8f5b-44bf-b03e-96b1110062c1",
         "type": "Table",
         "position": {
-          "x": -977.6350247595514,
-          "y": 229.97514476728136
+          "x": -1460.3573086411416,
+          "y": 308.6798649653667
         },
         "data": {
-          "label": "EDITORIALES",
+          "label": "EDITORIAL",
           "isConnectable": false,
           "columns": [
             {
@@ -980,13 +1107,15 @@
               "name": "editorial_id",
               "type": "INT",
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
               "id": "3e6a6068-5e43-4965-bee3-0c548f915780",
               "name": "nombre",
               "type": "INT",
-              "isPrimaryKey": false
+              "isPrimaryKey": false,
+              "isUnique": true
             }
           ],
           "numberOfGroups": 0,
@@ -995,6 +1124,238 @@
         "measured": {
           "width": 240,
           "height": 76
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "edd474aa-85f5-4fbe-abff-8220ab4c2c3c",
+        "type": "Table",
+        "position": {
+          "x": -715.0630980329414,
+          "y": 58.13787679671077
+        },
+        "data": {
+          "label": "PUBLICACION",
+          "isConnectable": false,
+          "columns": [
+            {
+              "id": "df314c7f-cc63-4864-966c-2f1f7a7e5451",
+              "name": "publicacion_id",
+              "type": "INT",
+              "position": 0,
+              "isPrimaryKey": true,
+              "isOptional": false
+            },
+            {
+              "id": "ec669511-2b7b-4055-9727-79f06deef145",
+              "name": "stock",
+              "type": "INT",
+              "position": 0
+            },
+            {
+              "id": "68ed73c8-d8c7-431a-be13-2b48db29ada5",
+              "name": "precio",
+              "type": "INT",
+              "position": 0
+            },
+            {
+              "id": "155f424a-24b9-4d4f-afb8-cd63258aebfc",
+              "name": "estado_publicacion",
+              "type": "INT",
+              "position": 0
+            },
+            {
+              "id": "fk_97f361a3-c429-44d8-8e03-a1821c06c44b",
+              "name": "fk_USUARIO",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "412aee65-0d92-46a6-99e4-f02bbe0607dc",
+                "sourceTableId": "0b8e49ba-0b59-4687-b0f6-92f615504f91",
+                "columns": [
+                  {
+                    "id": "fk_ccfa575c-0724-4420-82a5-f0ee7c51baa2",
+                    "name": "usuario_id",
+                    "type": "INT"
+                  }
+                ]
+              },
+              "groupNumbers": [
+                1
+              ]
+            },
+            {
+              "id": "fk_c506df37-ac57-4117-bd2e-302e41427456",
+              "name": "fk_LIBRO",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "4d3ad1a4-ea38-405b-954f-e59b53ccbc79",
+                "sourceTableId": "c04ca5e7-fa8f-4dfe-91a8-54a381f1722e",
+                "columns": [
+                  {
+                    "id": "fk_c20006d1-965e-41c7-9414-81880b017016",
+                    "name": "libro_id",
+                    "type": "INT"
+                  }
+                ]
+              },
+              "groupNumbers": [
+                1
+              ]
+            },
+            {
+              "id": "fk_c4c556fe-e024-4fe3-bbf3-50deaffadb7a",
+              "name": "fk_CONDICION",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "7cfa350a-27b2-4cec-a6a5-681cb524387f",
+                "sourceTableId": "035b8ef9-955d-47a3-a268-0897bd4e53c9",
+                "columns": [
+                  {
+                    "id": "fk_9bcb9b19-b131-487b-bc62-751bcc7cef8d",
+                    "name": "condicion_id",
+                    "type": "INT"
+                  }
+                ]
+              },
+              "groupNumbers": [
+                1
+              ]
+            },
+            {
+              "id": "6c493cce-60ea-4338-bd14-2c47c5803e6b",
+              "name": "fecha_publicacion",
+              "type": "INT",
+              "position": 0
+            }
+          ],
+          "isSelected": false
+        },
+        "measured": {
+          "width": 253,
+          "height": 228
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "035b8ef9-955d-47a3-a268-0897bd4e53c9",
+        "type": "Table",
+        "position": {
+          "x": -713.7635772491229,
+          "y": 305.5912017932694
+        },
+        "data": {
+          "label": "CONDICION",
+          "isConnectable": false,
+          "columns": [
+            {
+              "id": "9bcb9b19-b131-487b-bc62-751bcc7cef8d",
+              "name": "condicion_id",
+              "type": "INT",
+              "position": 0,
+              "isPrimaryKey": true,
+              "isOptional": false,
+              "isUnique": false
+            },
+            {
+              "id": "a597d40e-4dad-4247-bf8c-47f0a2f6ef5d",
+              "name": "nombre",
+              "type": "INT",
+              "position": 0,
+              "isUnique": true
+            }
+          ],
+          "isSelected": false
+        },
+        "measured": {
+          "width": 240,
+          "height": 76
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "fe449f3c-8895-470a-afb8-0179ac0652ab",
+        "type": "Table",
+        "position": {
+          "x": 202.3408421263784,
+          "y": 693.3725122327367
+        },
+        "data": {
+          "label": "DESTINO",
+          "isConnectable": false,
+          "columns": [
+            {
+              "id": "35dedb9d-be29-434f-8dfb-9ec432d34e51",
+              "name": "destino_id",
+              "type": "INT",
+              "position": 0,
+              "isPrimaryKey": true,
+              "isOptional": false
+            },
+            {
+              "id": "e260d0ae-d126-42a5-87dd-ffae33b8149d",
+              "name": "calle",
+              "type": "INT",
+              "position": 0
+            },
+            {
+              "id": "1678f94c-98f6-40b7-a262-b2ef1e72fde4",
+              "name": "altura",
+              "type": "INT",
+              "position": 0
+            },
+            {
+              "id": "6b59692b-a08c-4471-a33a-89709ae9f1ce",
+              "name": "piso",
+              "type": "INT",
+              "position": 0
+            },
+            {
+              "id": "8c15a933-a269-4ad5-a63f-3862fcae3fb2",
+              "name": "departamento",
+              "type": "INT",
+              "position": 0
+            },
+            {
+              "id": "b4e205bb-c3bb-4a29-9e96-0be614b0fbdd",
+              "name": "codigo_postal",
+              "type": "INT",
+              "position": 0
+            },
+            {
+              "id": "9fc60897-2566-49b8-a717-d1e1b0688a03",
+              "name": "referencia",
+              "type": "INT",
+              "position": 0
+            },
+            {
+              "id": "fk_03c3b116-f2ac-42e3-b9eb-6edabb7015a1",
+              "name": "fk_CIUDAD",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "e59d51de-9691-4bf7-bb38-7bd223b11045",
+                "sourceTableId": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e",
+                "columns": [
+                  {
+                    "id": "fk_435d193f-22ae-4f54-80d1-09211ff9fe6c",
+                    "name": "ciudad_id",
+                    "type": "INT"
+                  }
+                ]
+              }
+            }
+          ],
+          "isSelected": false
+        },
+        "measured": {
+          "width": 240,
+          "height": 228
         },
         "selected": false,
         "dragging": false
@@ -1022,7 +1383,8 @@
               }
             ]
           }
-        }
+        },
+        "selected": false
       },
       {
         "id": "0b8e49ba-0b59-4687-b0f6-92f615504f91->7bfe6d80-d308-4f20-9639-695e751948e1_c97da592-f162-4106-af81-043bff2b02b1",
@@ -1045,7 +1407,8 @@
               }
             ]
           }
-        }
+        },
+        "selected": false
       },
       {
         "id": "1ce0941f-e98c-4527-bb44-af0b9164edc6->ee5746a9-64c0-4e57-90f2-0ecb8abfb28e_1115e9db-bebd-4703-abec-2ee1b0359d21",
@@ -1068,7 +1431,8 @@
               }
             ]
           }
-        }
+        },
+        "selected": false
       },
       {
         "id": "0b8e49ba-0b59-4687-b0f6-92f615504f91->b41f5c40-74d4-478a-a2bb-81a293ceab23_d3c78a90-fbb9-4fa0-b014-15c604a69bf3",
@@ -1091,7 +1455,8 @@
               }
             ]
           }
-        }
+        },
+        "selected": false
       },
       {
         "id": "83a4163a-1edf-4865-87b5-4da87f399b63->b41f5c40-74d4-478a-a2bb-81a293ceab23_e061b7a2-42cb-4fa7-99d2-9279a580ff43",
@@ -1206,30 +1571,6 @@
               {
                 "id": "fk_48e2e900-717f-42da-bc88-44f5b9154ead",
                 "name": "pedido_id",
-                "type": "INT"
-              }
-            ]
-          }
-        },
-        "selected": false
-      },
-      {
-        "id": "c04ca5e7-fa8f-4dfe-91a8-54a381f1722e->63977999-35de-44f2-a771-1a363620989f_45506b0b-a90d-453e-ab6b-9f4d3423d447",
-        "type": "Relational",
-        "source": "c04ca5e7-fa8f-4dfe-91a8-54a381f1722e",
-        "targetHandle": "foreign-key-handle-45506b0b-a90d-453e-ab6b-9f4d3423d447",
-        "target": "63977999-35de-44f2-a771-1a363620989f",
-        "markerStart": {
-          "type": "arrow"
-        },
-        "data": {
-          "foreignKeyProps": {
-            "foreignKeyGroupId": "45506b0b-a90d-453e-ab6b-9f4d3423d447",
-            "sourceTableId": "c04ca5e7-fa8f-4dfe-91a8-54a381f1722e",
-            "columns": [
-              {
-                "id": "fk_c20006d1-965e-41c7-9414-81880b017016",
-                "name": "libro_id",
                 "type": "INT"
               }
             ]
@@ -1378,13 +1719,158 @@
               }
             ]
           }
-        }
+        },
+        "selected": false
+      },
+      {
+        "id": "0b8e49ba-0b59-4687-b0f6-92f615504f91->edd474aa-85f5-4fbe-abff-8220ab4c2c3c_412aee65-0d92-46a6-99e4-f02bbe0607dc",
+        "type": "Relational",
+        "source": "0b8e49ba-0b59-4687-b0f6-92f615504f91",
+        "targetHandle": "foreign-key-handle-412aee65-0d92-46a6-99e4-f02bbe0607dc",
+        "target": "edd474aa-85f5-4fbe-abff-8220ab4c2c3c",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "412aee65-0d92-46a6-99e4-f02bbe0607dc",
+            "sourceTableId": "0b8e49ba-0b59-4687-b0f6-92f615504f91",
+            "columns": [
+              {
+                "id": "fk_ccfa575c-0724-4420-82a5-f0ee7c51baa2",
+                "name": "usuario_id",
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "selected": false
+      },
+      {
+        "id": "c04ca5e7-fa8f-4dfe-91a8-54a381f1722e->edd474aa-85f5-4fbe-abff-8220ab4c2c3c_4d3ad1a4-ea38-405b-954f-e59b53ccbc79",
+        "type": "Relational",
+        "source": "c04ca5e7-fa8f-4dfe-91a8-54a381f1722e",
+        "targetHandle": "foreign-key-handle-4d3ad1a4-ea38-405b-954f-e59b53ccbc79",
+        "target": "edd474aa-85f5-4fbe-abff-8220ab4c2c3c",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "4d3ad1a4-ea38-405b-954f-e59b53ccbc79",
+            "sourceTableId": "c04ca5e7-fa8f-4dfe-91a8-54a381f1722e",
+            "columns": [
+              {
+                "id": "fk_c20006d1-965e-41c7-9414-81880b017016",
+                "name": "libro_id",
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "selected": false
+      },
+      {
+        "id": "edd474aa-85f5-4fbe-abff-8220ab4c2c3c->63977999-35de-44f2-a771-1a363620989f_52b199c1-4b5f-4099-9b94-edc6752791be",
+        "type": "Relational",
+        "source": "edd474aa-85f5-4fbe-abff-8220ab4c2c3c",
+        "targetHandle": "foreign-key-handle-52b199c1-4b5f-4099-9b94-edc6752791be",
+        "target": "63977999-35de-44f2-a771-1a363620989f",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "52b199c1-4b5f-4099-9b94-edc6752791be",
+            "sourceTableId": "edd474aa-85f5-4fbe-abff-8220ab4c2c3c",
+            "columns": [
+              {
+                "id": "fk_df314c7f-cc63-4864-966c-2f1f7a7e5451",
+                "name": "publicacion_id",
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "selected": false
+      },
+      {
+        "id": "035b8ef9-955d-47a3-a268-0897bd4e53c9->edd474aa-85f5-4fbe-abff-8220ab4c2c3c_7cfa350a-27b2-4cec-a6a5-681cb524387f",
+        "type": "Relational",
+        "source": "035b8ef9-955d-47a3-a268-0897bd4e53c9",
+        "targetHandle": "foreign-key-handle-7cfa350a-27b2-4cec-a6a5-681cb524387f",
+        "target": "edd474aa-85f5-4fbe-abff-8220ab4c2c3c",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "7cfa350a-27b2-4cec-a6a5-681cb524387f",
+            "sourceTableId": "035b8ef9-955d-47a3-a268-0897bd4e53c9",
+            "columns": [
+              {
+                "id": "fk_9bcb9b19-b131-487b-bc62-751bcc7cef8d",
+                "name": "condicion_id",
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "selected": false
+      },
+      {
+        "id": "fe449f3c-8895-470a-afb8-0179ac0652ab->b41f5c40-74d4-478a-a2bb-81a293ceab23_aee77b1d-7a11-4595-b1e1-b1712ee1d7c6",
+        "type": "Relational",
+        "source": "fe449f3c-8895-470a-afb8-0179ac0652ab",
+        "targetHandle": "foreign-key-handle-aee77b1d-7a11-4595-b1e1-b1712ee1d7c6",
+        "target": "b41f5c40-74d4-478a-a2bb-81a293ceab23",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "aee77b1d-7a11-4595-b1e1-b1712ee1d7c6",
+            "sourceTableId": "fe449f3c-8895-470a-afb8-0179ac0652ab",
+            "columns": [
+              {
+                "id": "fk_35dedb9d-be29-434f-8dfb-9ec432d34e51",
+                "name": "destino_id",
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "selected": false
+      },
+      {
+        "id": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e->fe449f3c-8895-470a-afb8-0179ac0652ab_e59d51de-9691-4bf7-bb38-7bd223b11045",
+        "type": "Relational",
+        "source": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e",
+        "targetHandle": "foreign-key-handle-e59d51de-9691-4bf7-bb38-7bd223b11045",
+        "target": "fe449f3c-8895-470a-afb8-0179ac0652ab",
+        "markerStart": {
+          "type": "arrow"
+        },
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "e59d51de-9691-4bf7-bb38-7bd223b11045",
+            "sourceTableId": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e",
+            "columns": [
+              {
+                "id": "fk_435d193f-22ae-4f54-80d1-09211ff9fe6c",
+                "name": "ciudad_id",
+                "type": "INT"
+              }
+            ]
+          }
+        },
+        "selected": false
       }
     ],
     "viewport": {
-      "x": 1049.6905724800326,
-      "y": 169.4303120492978,
-      "zoom": 0.6053147570735729
+      "x": 1454.3174017605595,
+      "y": 206.4177381543459,
+      "zoom": 1.1725590999612225
     }
   },
   "name": "sistema-venta-libros-der-Relational Schema",
@@ -1401,5 +1887,5 @@
     "id": 416549
   },
   "id": 580284,
-  "updatedAtTimestamp": 1789071148
+  "updatedAtTimestamp": 1789408580
 }
