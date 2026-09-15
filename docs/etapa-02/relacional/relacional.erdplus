@@ -132,7 +132,7 @@
             }
           ],
           "numberOfGroups": 0,
-          "isSelected": true
+          "isSelected": false
         },
         "measured": {
           "width": 240,
@@ -165,7 +165,8 @@
               "name": "nombre",
               "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": true
+              "isUnique": true,
+              "size": "50"
             }
           ],
           "numberOfGroups": 0,
@@ -413,7 +414,7 @@
             {
               "id": "48e2e900-717f-42da-bc88-44f5b9154ead",
               "name": "pedido_id",
-              "type": "Custom",
+              "type": "INT",
               "isPrimaryKey": true,
               "isOptional": false,
               "position": 0,
@@ -572,7 +573,8 @@
               "type": "VARCHAR(n)",
               "isPrimaryKey": false,
               "groupNumbers": [],
-              "isUnique": true
+              "isUnique": true,
+              "size": "50"
             },
             {
               "id": "d5ad2432-e102-49d3-9185-ac1bc98f5c1b",
@@ -688,7 +690,7 @@
                   {
                     "id": "fk_48e2e900-717f-42da-bc88-44f5b9154ead",
                     "name": "pedido_id",
-                    "type": "Custom",
+                    "type": "INT",
                     "size": "DATETIME2(0)"
                   }
                 ]
@@ -731,7 +733,8 @@
               "name": "nombre",
               "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": true
+              "isUnique": true,
+              "size": "50"
             }
           ],
           "numberOfGroups": 0,
@@ -768,7 +771,8 @@
               "name": "nombre",
               "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": true
+              "isUnique": true,
+              "size": "50"
             }
           ],
           "numberOfGroups": 0,
@@ -827,7 +831,7 @@
                   {
                     "id": "fk_48e2e900-717f-42da-bc88-44f5b9154ead",
                     "name": "pedido_id",
-                    "type": "Custom",
+                    "type": "INT",
                     "size": "DATETIME2(0)"
                   }
                 ]
@@ -1375,7 +1379,8 @@
               "name": "nombre",
               "type": "VARCHAR(n)",
               "position": 0,
-              "isUnique": true
+              "isUnique": true,
+              "size": "50"
             }
           ],
           "isSelected": false
@@ -1931,9 +1936,9 @@
       }
     ],
     "viewport": {
-      "x": 1566.7648347425509,
-      "y": -176.7003566505744,
-      "zoom": 1.276328768828953
+      "x": 981.9002693402656,
+      "y": 126.46835938157983,
+      "zoom": 0.9938187696770258
     }
   },
   "name": "sistema-venta-libros-relacional",
@@ -1950,5 +1955,5 @@
     "id": 416549
   },
   "id": 580284,
-  "updatedAtTimestamp": 1789501225
+  "updatedAtTimestamp": 1789504205
 }
