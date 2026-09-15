@@ -19,70 +19,96 @@
               "type": "INT",
               "isPrimaryKey": true,
               "isOptional": false,
-              "isUnique": false
-            },
-            {
-              "id": "54081ce8-8e72-436a-bc92-82fa5e57ebab",
-              "name": "usuario_estado",
-              "type": "INT",
-              "isPrimaryKey": false,
-              "isUnique": false
+              "isUnique": false,
+              "position": 0
             },
             {
               "id": "a4290908-f34f-4893-8123-46024c2a1e35",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": false
+              "isUnique": false,
+              "position": 1,
+              "isOptional": false,
+              "size": "50"
             },
             {
               "id": "bc0c0010-af96-4dae-86b6-873d4b6545ff",
               "name": "apellido",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": false
+              "isUnique": false,
+              "position": 2,
+              "isOptional": false,
+              "size": "50"
             },
             {
               "id": "8ef28a0f-2934-4085-8468-53370b20d256",
               "name": "dni",
               "type": "INT",
               "isPrimaryKey": false,
-              "isUnique": true
+              "isUnique": true,
+              "position": 3,
+              "isOptional": false
             },
             {
               "id": "83ffc825-ad12-40d6-aa6a-c8de007060ef",
               "name": "email",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": true
+              "isUnique": true,
+              "position": 4,
+              "size": "254",
+              "isOptional": false
             },
             {
               "id": "a66df443-4a94-4535-bec5-00297f210099",
               "name": "telefono",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": false
+              "isUnique": false,
+              "position": 5,
+              "size": "20",
+              "isOptional": false
             },
             {
               "id": "f0a2e55c-6447-4274-9a72-7e5ffc36a718",
               "name": "fecha_nacimiento",
               "type": "DATE",
               "isPrimaryKey": false,
-              "isUnique": false
+              "isUnique": false,
+              "position": 6,
+              "isOptional": false
             },
             {
               "id": "cb568211-a406-4cfe-a539-6da8d4482268",
               "name": "password_hash",
-              "type": "INT",
+              "type": "Custom",
               "isPrimaryKey": false,
-              "isUnique": false
+              "isUnique": false,
+              "position": 7,
+              "size": "BINARY(32)",
+              "isOptional": false
             },
             {
               "id": "5ec72255-a2a8-49b4-9cb7-c0087c2d0a6b",
               "name": "imagen_url",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": false
+              "isUnique": false,
+              "position": 8,
+              "isOptional": true,
+              "size": "500"
+            },
+            {
+              "id": "54081ce8-8e72-436a-bc92-82fa5e57ebab",
+              "name": "es_activo",
+              "type": "Custom",
+              "isPrimaryKey": false,
+              "isUnique": false,
+              "position": 9,
+              "isOptional": false,
+              "size": "BIT"
             },
             {
               "id": "72e6a9eb-31b8-4fc7-a758-5ba143138d5b",
@@ -101,11 +127,12 @@
                 ]
               },
               "isOptional": false,
-              "isUnique": false
+              "isUnique": false,
+              "position": 10
             }
           ],
           "numberOfGroups": 0,
-          "isSelected": false
+          "isSelected": true
         },
         "measured": {
           "width": 240,
@@ -136,7 +163,7 @@
             {
               "id": "8149daf1-f7c5-47dd-834f-8de9ab4d30a8",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
               "isUnique": true
             }
@@ -173,28 +200,35 @@
             {
               "id": "6d9fe178-9477-4ce3-9be4-9c95ab8f2a14",
               "name": "calle",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "position": 1
+              "position": 1,
+              "isOptional": false,
+              "size": "100"
             },
             {
               "id": "1aad9878-30d5-4b91-9ae1-07243b8ba349",
               "name": "altura",
               "type": "INT",
               "isPrimaryKey": false,
-              "position": 2
+              "position": 2,
+              "isOptional": false
             },
             {
               "id": "a402f082-fa8b-4f9c-afea-42504e55aee1",
               "name": "piso",
-              "type": "INT",
-              "position": 3
+              "type": "VARCHAR(n)",
+              "position": 3,
+              "size": "5",
+              "isOptional": true
             },
             {
               "id": "ebaefbac-72af-4bef-93f1-ee6a9de465e9",
               "name": "departamento",
-              "type": "INT",
-              "position": 4
+              "type": "VARCHAR(n)",
+              "position": 4,
+              "size": "5",
+              "isOptional": true
             },
             {
               "id": "19ae62b6-3142-40ae-bffb-50a305ca0024",
@@ -233,19 +267,24 @@
                 ]
               },
               "isPrimaryKey": false,
-              "position": 6
+              "position": 6,
+              "isOptional": false
             },
             {
               "id": "7417b227-a318-474d-a83a-507299653228",
               "name": "codigo_postal",
-              "type": "INT",
-              "position": 6
+              "type": "VARCHAR(n)",
+              "position": 6,
+              "size": "8",
+              "isOptional": false
             },
             {
               "id": "ff0fbd78-11f9-4b07-ba64-cb1cc7188326",
               "name": "referencia",
-              "type": "INT",
-              "position": 6
+              "type": "VARCHAR(n)",
+              "position": 6,
+              "isOptional": true,
+              "size": "255"
             }
           ],
           "numberOfGroups": 0,
@@ -281,9 +320,10 @@
             {
               "id": "b4d3dfb9-a040-4521-9bf2-2cf7e99802ff",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": true
+              "isUnique": true,
+              "size": "100"
             }
           ],
           "numberOfGroups": 0,
@@ -318,12 +358,13 @@
             {
               "id": "04e3a273-a6a5-4320-bf41-97be4747ee67",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
               "isUnique": false,
               "groupNumbers": [
                 1
-              ]
+              ],
+              "size": "100"
             },
             {
               "id": "72b04179-e6ea-41b1-b89c-9b3d7717c71f",
@@ -372,26 +413,69 @@
             {
               "id": "48e2e900-717f-42da-bc88-44f5b9154ead",
               "name": "pedido_id",
-              "type": "INT",
+              "type": "Custom",
               "isPrimaryKey": true,
               "isOptional": false,
               "position": 0,
-              "isUnique": false
-            },
-            {
-              "id": "02686695-af0f-4fc2-9ac9-246f7ea2c34b",
-              "name": "importe",
-              "type": "FLOAT",
-              "position": 1,
-              "isUnique": false
+              "isUnique": false,
+              "size": "DATETIME2(0)"
             },
             {
               "id": "6ed62574-5f58-489e-ad92-a5cafcd64a1b",
               "name": "fecha_pedido",
-              "type": "INT",
+              "type": "Custom",
               "isPrimaryKey": false,
               "position": 2,
-              "isUnique": false
+              "isUnique": false,
+              "isOptional": false,
+              "size": "DATETIME2(0)"
+            },
+            {
+              "id": "0ffe6d8f-a0a5-4347-9e18-fd42ff6c7498",
+              "name": "envio_calle",
+              "type": "VARCHAR(n)",
+              "position": 3,
+              "isOptional": false,
+              "size": "100"
+            },
+            {
+              "id": "db427e84-d528-4460-942e-40a03bd0d538",
+              "name": "envio_altura",
+              "type": "INT",
+              "position": 4,
+              "isOptional": false
+            },
+            {
+              "id": "94cd1b6e-e9fb-4455-92cb-76f5351efd2a",
+              "name": "envio_piso",
+              "type": "VARCHAR(n)",
+              "position": 5,
+              "size": "5",
+              "isOptional": true
+            },
+            {
+              "id": "57a2577b-27e1-4afe-b9c7-34aac6b7d399",
+              "name": "envio_departamento",
+              "type": "VARCHAR(n)",
+              "position": 6,
+              "size": "5",
+              "isOptional": true
+            },
+            {
+              "id": "90b7bfde-1907-4cc4-af92-3ab53f0de70b",
+              "name": "envio_codigo_postal",
+              "type": "VARCHAR(n)",
+              "position": 7,
+              "size": "8",
+              "isOptional": false
+            },
+            {
+              "id": "9cae696f-48e0-4f99-b4f2-d2d1008bf4a8",
+              "name": "envio_referencia",
+              "type": "VARCHAR(n)",
+              "position": 8,
+              "isOptional": true,
+              "size": "255"
             },
             {
               "id": "fa579644-5de0-4606-90fc-daff17338474",
@@ -410,7 +494,7 @@
                 ]
               },
               "isOptional": false,
-              "position": 3,
+              "position": 9,
               "isUnique": false
             },
             {
@@ -430,26 +514,27 @@
                 ]
               },
               "isOptional": false,
-              "position": 4,
+              "position": 10,
               "isUnique": false
             },
             {
-              "id": "fk_046c0b1a-1f18-4696-ab7a-bcf2df9fe0e3",
-              "name": "fk_DESTINO",
+              "id": "fk_5b33b5fa-de53-4139-9c17-2698add2e01b",
+              "name": "fk_CIUDAD",
               "type": "None",
               "isForeignKey": true,
               "foreignKeyProps": {
-                "foreignKeyGroupId": "aee77b1d-7a11-4595-b1e1-b1712ee1d7c6",
-                "sourceTableId": "fe449f3c-8895-470a-afb8-0179ac0652ab",
+                "foreignKeyGroupId": "6499530a-4b60-459d-a197-1c7cf896a133",
+                "sourceTableId": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e",
                 "columns": [
                   {
-                    "id": "fk_35dedb9d-be29-434f-8dfb-9ec432d34e51",
-                    "name": "destino_id",
+                    "id": "fk_435d193f-22ae-4f54-80d1-09211ff9fe6c",
+                    "name": "ciudad_id",
                     "type": "INT"
                   }
                 ]
               },
-              "isUnique": true
+              "position": 11,
+              "isOptional": false
             }
           ],
           "numberOfGroups": 0,
@@ -457,7 +542,7 @@
         },
         "measured": {
           "width": 240,
-          "height": 178
+          "height": 304
         },
         "selected": false,
         "dragging": false
@@ -484,7 +569,7 @@
             {
               "id": "4265fd83-5f86-4224-95c1-aba174627a1a",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
               "groupNumbers": [],
               "isUnique": true
@@ -492,10 +577,11 @@
             {
               "id": "d5ad2432-e102-49d3-9185-ac1bc98f5c1b",
               "name": "descripcion",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
               "groupNumbers": [],
-              "isUnique": false
+              "isUnique": false,
+              "size": "255"
             }
           ],
           "numberOfGroups": 0,
@@ -530,24 +616,27 @@
             {
               "id": "4f31c708-a592-4e06-9b5c-4046297a518c",
               "name": "importe",
-              "type": "FLOAT",
+              "type": "NUMERIC(p s)",
               "position": 1,
-              "isOptional": false
+              "isOptional": false,
+              "size": "12,2"
             },
             {
               "id": "566588b4-7a06-4924-aef6-9b4961930dd1",
               "name": "fecha_creacion",
-              "type": "INT",
+              "type": "Custom",
               "isPrimaryKey": false,
               "position": 2,
-              "isOptional": false
+              "isOptional": false,
+              "size": "DATETIME2(0)"
             },
             {
               "id": "398809f6-6621-419e-ac24-c7e10068cc18",
               "name": "fecha_pago",
-              "type": "INT",
+              "type": "Custom",
               "position": 3,
-              "isOptional": false
+              "isOptional": true,
+              "size": "DATETIME2(0)"
             },
             {
               "id": "9cc52fff-5332-4852-914b-d315b895acb2",
@@ -599,7 +688,8 @@
                   {
                     "id": "fk_48e2e900-717f-42da-bc88-44f5b9154ead",
                     "name": "pedido_id",
-                    "type": "INT"
+                    "type": "Custom",
+                    "size": "DATETIME2(0)"
                   }
                 ]
               },
@@ -639,7 +729,7 @@
             {
               "id": "7dc99b4c-64aa-4e48-861a-e7eb236c3f29",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
               "isUnique": true
             }
@@ -676,7 +766,7 @@
             {
               "id": "25407348-539f-4794-a27d-2b32be9cadcc",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
               "isUnique": true
             }
@@ -720,9 +810,10 @@
             {
               "id": "25312b17-05b7-45ca-a161-552dcd6a89cd",
               "name": "precio_unitario",
-              "type": "INT",
+              "type": "NUMERIC(p s)",
               "isPrimaryKey": false,
-              "isUnique": false
+              "isUnique": false,
+              "size": "12,2"
             },
             {
               "id": "96e6cd3a-8736-4d64-9539-bb902339490b",
@@ -736,7 +827,8 @@
                   {
                     "id": "fk_48e2e900-717f-42da-bc88-44f5b9154ead",
                     "name": "pedido_id",
-                    "type": "INT"
+                    "type": "Custom",
+                    "size": "DATETIME2(0)"
                   }
                 ]
               },
@@ -800,10 +892,11 @@
             {
               "id": "7762569d-6c19-4c7c-a363-73fb6d814dbf",
               "name": "isbn",
-              "type": "INT",
+              "type": "CHAR(n)",
               "isPrimaryKey": false,
               "isUnique": true,
-              "position": 1
+              "position": 1,
+              "size": "13"
             },
             {
               "id": "8e330969-0170-4de2-bee2-60ab017b0114",
@@ -811,7 +904,8 @@
               "type": "VARCHAR(n)",
               "isPrimaryKey": false,
               "isUnique": false,
-              "position": 2
+              "position": 2,
+              "size": "200"
             },
             {
               "id": "0f002b66-d982-44e9-b661-4b41d0528aec",
@@ -830,9 +924,21 @@
               "position": 4
             },
             {
-              "id": "d5952c36-678c-4f55-b9e8-3f181386f906",
-              "name": "encuadernacion",
-              "type": "INT",
+              "id": "fk_9ec957ab-3078-4599-9253-93c4712694f5",
+              "name": "fk_ENCUADERNACION",
+              "type": "None",
+              "isForeignKey": true,
+              "foreignKeyProps": {
+                "foreignKeyGroupId": "158f8b0e-4bab-4f6d-8567-9e26cf4bd312",
+                "sourceTableId": "9cf87372-250e-4520-8408-24180966a12e",
+                "columns": [
+                  {
+                    "id": "fk_294662a2-4777-4187-922c-2cd1713baf75",
+                    "name": "encuadernacion_id",
+                    "type": "INT"
+                  }
+                ]
+              },
               "position": 5
             },
             {
@@ -910,8 +1016,8 @@
         "id": "0fd0d908-2f80-4145-a52f-7157ce4764c5",
         "type": "Table",
         "position": {
-          "x": -1754.1808590781338,
-          "y": -18.06157403719823
+          "x": -1800.4384838470216,
+          "y": -16.593078012789096
         },
         "data": {
           "label": "AUTOR",
@@ -928,9 +1034,10 @@
             {
               "id": "aef713c2-09e5-4d23-9e9c-1b647553b82f",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": false
+              "isUnique": false,
+              "size": "100"
             }
           ],
           "numberOfGroups": 0,
@@ -1039,9 +1146,10 @@
             {
               "id": "db61e52c-1037-4ee3-8bb6-6dc852fbc712",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": true
+              "isUnique": true,
+              "size": "50"
             }
           ],
           "numberOfGroups": 0,
@@ -1076,9 +1184,10 @@
             {
               "id": "f1f4e44a-1769-423e-812b-f9fffcb0a80d",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": true
+              "isUnique": true,
+              "size": "50"
             }
           ],
           "numberOfGroups": 0,
@@ -1113,9 +1222,10 @@
             {
               "id": "3e6a6068-5e43-4965-bee3-0c548f915780",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "isPrimaryKey": false,
-              "isUnique": true
+              "isUnique": true,
+              "size": "100"
             }
           ],
           "numberOfGroups": 0,
@@ -1151,19 +1261,21 @@
               "id": "ec669511-2b7b-4055-9727-79f06deef145",
               "name": "stock",
               "type": "INT",
-              "position": 0
+              "position": 1
             },
             {
               "id": "68ed73c8-d8c7-431a-be13-2b48db29ada5",
               "name": "precio",
-              "type": "INT",
-              "position": 0
+              "type": "NUMERIC(p s)",
+              "position": 2,
+              "size": "12,2"
             },
             {
               "id": "155f424a-24b9-4d4f-afb8-cd63258aebfc",
-              "name": "estado_publicacion",
-              "type": "INT",
-              "position": 0
+              "name": "es_activo",
+              "type": "Custom",
+              "position": 4,
+              "size": "BIT"
             },
             {
               "id": "fk_97f361a3-c429-44d8-8e03-a1821c06c44b",
@@ -1183,7 +1295,8 @@
               },
               "groupNumbers": [
                 1
-              ]
+              ],
+              "position": 5
             },
             {
               "id": "fk_c506df37-ac57-4117-bd2e-302e41427456",
@@ -1203,7 +1316,8 @@
               },
               "groupNumbers": [
                 1
-              ]
+              ],
+              "position": 6
             },
             {
               "id": "fk_c4c556fe-e024-4fe3-bbf3-50deaffadb7a",
@@ -1223,20 +1337,15 @@
               },
               "groupNumbers": [
                 1
-              ]
-            },
-            {
-              "id": "6c493cce-60ea-4338-bd14-2c47c5803e6b",
-              "name": "fecha_publicacion",
-              "type": "INT",
-              "position": 0
+              ],
+              "position": 7
             }
           ],
           "isSelected": false
         },
         "measured": {
           "width": 253,
-          "height": 228
+          "height": 203
         },
         "selected": false,
         "dragging": false
@@ -1264,7 +1373,7 @@
             {
               "id": "a597d40e-4dad-4247-bf8c-47f0a2f6ef5d",
               "name": "nombre",
-              "type": "INT",
+              "type": "VARCHAR(n)",
               "position": 0,
               "isUnique": true
             }
@@ -1279,83 +1388,39 @@
         "dragging": false
       },
       {
-        "id": "fe449f3c-8895-470a-afb8-0179ac0652ab",
+        "id": "9cf87372-250e-4520-8408-24180966a12e",
         "type": "Table",
         "position": {
-          "x": 202.3408421263784,
-          "y": 693.3725122327367
+          "x": -1464.5095953155833,
+          "y": 423.94469200580363
         },
         "data": {
-          "label": "DESTINO",
+          "label": "ENCUADERNACION",
           "isConnectable": false,
           "columns": [
             {
-              "id": "35dedb9d-be29-434f-8dfb-9ec432d34e51",
-              "name": "destino_id",
+              "id": "294662a2-4777-4187-922c-2cd1713baf75",
+              "name": "encuadernacion_id",
               "type": "INT",
               "position": 0,
               "isPrimaryKey": true,
-              "isOptional": false
+              "isOptional": false,
+              "isUnique": false
             },
             {
-              "id": "e260d0ae-d126-42a5-87dd-ffae33b8149d",
-              "name": "calle",
-              "type": "INT",
-              "position": 0
-            },
-            {
-              "id": "1678f94c-98f6-40b7-a262-b2ef1e72fde4",
-              "name": "altura",
-              "type": "INT",
-              "position": 0
-            },
-            {
-              "id": "6b59692b-a08c-4471-a33a-89709ae9f1ce",
-              "name": "piso",
-              "type": "INT",
-              "position": 0
-            },
-            {
-              "id": "8c15a933-a269-4ad5-a63f-3862fcae3fb2",
-              "name": "departamento",
-              "type": "INT",
-              "position": 0
-            },
-            {
-              "id": "b4e205bb-c3bb-4a29-9e96-0be614b0fbdd",
-              "name": "codigo_postal",
-              "type": "INT",
-              "position": 0
-            },
-            {
-              "id": "9fc60897-2566-49b8-a717-d1e1b0688a03",
-              "name": "referencia",
-              "type": "INT",
-              "position": 0
-            },
-            {
-              "id": "fk_03c3b116-f2ac-42e3-b9eb-6edabb7015a1",
-              "name": "fk_CIUDAD",
-              "type": "None",
-              "isForeignKey": true,
-              "foreignKeyProps": {
-                "foreignKeyGroupId": "e59d51de-9691-4bf7-bb38-7bd223b11045",
-                "sourceTableId": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e",
-                "columns": [
-                  {
-                    "id": "fk_435d193f-22ae-4f54-80d1-09211ff9fe6c",
-                    "name": "ciudad_id",
-                    "type": "INT"
-                  }
-                ]
-              }
+              "id": "1ba5e8f4-b8ff-46d4-ae95-595852b10865",
+              "name": "nombre",
+              "type": "VARCHAR(n)",
+              "position": 0,
+              "isUnique": true,
+              "size": "50"
             }
           ],
           "isSelected": false
         },
         "measured": {
           "width": 240,
-          "height": 228
+          "height": 76
         },
         "selected": false,
         "dragging": false
@@ -1819,41 +1884,17 @@
         "selected": false
       },
       {
-        "id": "fe449f3c-8895-470a-afb8-0179ac0652ab->b41f5c40-74d4-478a-a2bb-81a293ceab23_aee77b1d-7a11-4595-b1e1-b1712ee1d7c6",
+        "id": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e->b41f5c40-74d4-478a-a2bb-81a293ceab23_6499530a-4b60-459d-a197-1c7cf896a133",
         "type": "Relational",
-        "source": "fe449f3c-8895-470a-afb8-0179ac0652ab",
-        "targetHandle": "foreign-key-handle-aee77b1d-7a11-4595-b1e1-b1712ee1d7c6",
+        "source": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e",
+        "targetHandle": "foreign-key-handle-6499530a-4b60-459d-a197-1c7cf896a133",
         "target": "b41f5c40-74d4-478a-a2bb-81a293ceab23",
         "markerStart": {
           "type": "arrow"
         },
         "data": {
           "foreignKeyProps": {
-            "foreignKeyGroupId": "aee77b1d-7a11-4595-b1e1-b1712ee1d7c6",
-            "sourceTableId": "fe449f3c-8895-470a-afb8-0179ac0652ab",
-            "columns": [
-              {
-                "id": "fk_35dedb9d-be29-434f-8dfb-9ec432d34e51",
-                "name": "destino_id",
-                "type": "INT"
-              }
-            ]
-          }
-        },
-        "selected": false
-      },
-      {
-        "id": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e->fe449f3c-8895-470a-afb8-0179ac0652ab_e59d51de-9691-4bf7-bb38-7bd223b11045",
-        "type": "Relational",
-        "source": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e",
-        "targetHandle": "foreign-key-handle-e59d51de-9691-4bf7-bb38-7bd223b11045",
-        "target": "fe449f3c-8895-470a-afb8-0179ac0652ab",
-        "markerStart": {
-          "type": "arrow"
-        },
-        "data": {
-          "foreignKeyProps": {
-            "foreignKeyGroupId": "e59d51de-9691-4bf7-bb38-7bd223b11045",
+            "foreignKeyGroupId": "6499530a-4b60-459d-a197-1c7cf896a133",
             "sourceTableId": "ee5746a9-64c0-4e57-90f2-0ecb8abfb28e",
             "columns": [
               {
@@ -1863,17 +1904,39 @@
               }
             ]
           }
+        }
+      },
+      {
+        "id": "9cf87372-250e-4520-8408-24180966a12e->c04ca5e7-fa8f-4dfe-91a8-54a381f1722e_158f8b0e-4bab-4f6d-8567-9e26cf4bd312",
+        "type": "Relational",
+        "source": "9cf87372-250e-4520-8408-24180966a12e",
+        "targetHandle": "foreign-key-handle-158f8b0e-4bab-4f6d-8567-9e26cf4bd312",
+        "target": "c04ca5e7-fa8f-4dfe-91a8-54a381f1722e",
+        "markerStart": {
+          "type": "arrow"
         },
-        "selected": false
+        "data": {
+          "foreignKeyProps": {
+            "foreignKeyGroupId": "158f8b0e-4bab-4f6d-8567-9e26cf4bd312",
+            "sourceTableId": "9cf87372-250e-4520-8408-24180966a12e",
+            "columns": [
+              {
+                "id": "fk_294662a2-4777-4187-922c-2cd1713baf75",
+                "name": "encuadernacion_id",
+                "type": "INT"
+              }
+            ]
+          }
+        }
       }
     ],
     "viewport": {
-      "x": 1454.3174017605595,
-      "y": 206.4177381543459,
-      "zoom": 1.1725590999612225
+      "x": 1566.7648347425509,
+      "y": -176.7003566505744,
+      "zoom": 1.276328768828953
     }
   },
-  "name": "sistema-venta-libros-der-Relational Schema",
+  "name": "sistema-venta-libros-relacional",
   "folder": {
     "name": "Proyecto",
     "folderType": 2,
@@ -1887,5 +1950,5 @@
     "id": 416549
   },
   "id": 580284,
-  "updatedAtTimestamp": 1789408580
+  "updatedAtTimestamp": 1789501225
 }
