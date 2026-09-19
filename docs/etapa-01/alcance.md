@@ -1,23 +1,23 @@
-El sistema contemplará inicialmente:
+# Alcance del sistema - Etapa I
 
-● Gestión de usuarios y roles.
+Este documento enumera las funcionalidades que el sistema contemplará en su versión inicial.
 
-● Registro y gestión de clientes.
+## 1. Usuarios y clientes
 
-● Gestión de direcciones de los usuarios.
+- Gestión de usuarios y roles.
+- Registro y gestión de clientes.
+- Gestión de las direcciones de los usuarios.
 
-● Gestión del catálogo de libros.
+## 2. Catálogo de libros
 
-● Gestión de autores, editoriales y géneros.
+- Gestión del catálogo de libros.
+- Gestión de autores, editoriales y géneros.
+- Administración del precio actual de los libros.
+- Control del stock disponible.
 
-● Administración del precio actual de los libros.
+## 3. Ventas y pagos
 
-● Control del stock disponible.
-
-● Registro de compras con múltiples libros.
-
-● Registro de pagos online.
-
-● Manejo de estados de las ventas.
-
-● Métodos de pago (un método por compra).
+- Registro de compras que incluyan uno o varios libros.
+- Manejo de los estados de las ventas.
+- Métodos de pago (un único método por compra).
+- Registro de pagos online.
