@@ -1,3 +1,6 @@
+﻿/* Clientes con pagos aprobados: lista cada pedido cuyo pago fue aprobado,
+   con el cliente, el importe pagado y el método de pago utilizado. */
+
 SELECT DISTINCT
     U.usuario_id,
     U.nombre,

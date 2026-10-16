@@ -1,8 +1,7 @@
-USE [sistema-venta-libros]
-GO
--- PUNTO 2a: Total de ventas por CADA VENDEDOR en un rango de fechas
+﻿/* Total de ventas por vendedor en un rango de fechas: libros vendidos y monto
+   recaudado por cada usuario que publicó los libros, de menor a mayor monto. */
 
-SELECT 
+SELECT
     U.usuario_id,
     U.nombre + ' ' + U.apellido AS vendedor,
     COUNT(P.pedido_id) AS cantidad_ventas,
@@ -15,5 +14,3 @@ JOIN PEDIDO P ON PD.pedido_id = P.pedido_id
 WHERE P.fecha_pedido BETWEEN '2026-01-01' AND '2026-12-30' -- rango de fechas
 GROUP BY U.usuario_id, U.nombre, U.apellido
 ORDER BY total_recaudado ASC;
-GO
---------------------------------------------------

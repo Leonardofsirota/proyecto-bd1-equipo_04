@@ -1,3 +1,5 @@
+﻿/* Vendedores y libros que publican en tapa blanda o tapa dura, con el tipo
+   de encuadernación de cada libro. */
 
 SELECT
     U.usuario_id,

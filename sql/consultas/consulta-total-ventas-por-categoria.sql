@@ -1,9 +1,7 @@
-USE [sistema-venta-libros]
-GO
+﻿/* Total de ventas por categoría de libro en un rango de fechas: unidades
+   vendidas y monto recaudado por categoría, de mayor a menor monto. */
 
--- PUNTO 2B: Total de ventas por CATEGORIA en un rango de fechas
-
-SELECT 
+SELECT
     C.nombre AS categoria,
     COUNT(PD.pedido_detalle_id) AS cantidad_pedidos,
     SUM(PD.cantidad) AS unidades_vendidas,

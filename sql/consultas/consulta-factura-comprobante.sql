@@ -1,5 +1,5 @@
-USE [sistema-venta-libros];
-GO
+﻿/* Comprobante de venta: encabezado (número, fecha y cliente) y detalle de cada
+   venta, con el subtotal por renglón y el total acumulado de la venta. */
 
 SELECT
     -- Encabezado de la venta

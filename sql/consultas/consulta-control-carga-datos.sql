@@ -1,5 +1,6 @@
+﻿/* Control de la carga de datos: muestra el contenido completo de todas las
+   tablas de la base para verificar que la precarga se realizó correctamente. */
 
-------------------control del cargado de la base de datos---------------------------------------------
 SELECT * FROM AUTOR;
 SELECT * FROM AUTOR_LIBRO;
 SELECT * FROM CATEGORIA;
@@ -13,6 +14,7 @@ SELECT * FROM LIBRO;
 SELECT * FROM NACIONALIDAD;
 SELECT * FROM PAGO;
 SELECT * FROM PAGO_ESTADO;
+SELECT * FROM PAGO_METODO;
 SELECT * FROM PEDIDO;
 SELECT * FROM PEDIDO_DETALLE;
 SELECT * FROM PEDIDO_ESTADO;
@@ -20,4 +22,3 @@ SELECT * FROM PROVINCIA;
 SELECT * FROM PUBLICACION;
 SELECT * FROM USUARIO;
 SELECT * FROM USUARIO_ROL;
-

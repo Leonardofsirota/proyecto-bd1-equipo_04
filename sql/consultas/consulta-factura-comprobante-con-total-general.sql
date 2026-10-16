@@ -1,5 +1,5 @@
-USE [sistema-venta-libros];
-GO
+﻿/* Comprobante de todas las ventas: encabezado y detalle con subtotal por
+   renglón y total de cada venta, más un renglón final con el total general. */
 
 WITH DetalleVentas AS
 (
@@ -64,7 +64,7 @@ Resultado AS
 
     UNION ALL
 
-    -- Rengl�n final con el total de todas las ventas
+    -- Renglón final con el total de todas las ventas
     SELECT
         2 AS orden,
         NULL,
@@ -112,4 +112,3 @@ ORDER BY
     orden,
     pedido_id,
     pedido_detalle_id;
-GO
