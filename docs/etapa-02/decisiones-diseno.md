@@ -1,81 +1,83 @@
-# Decisiones de diseño - Etapa II
+# Decisiones de diseño - Etapa 2
 
-Este documento explica las decisiones tomadas al construir el diagrama entidad-relación y el modelo relacional, y el motivo de cada una.
+Este documento explica las principales decisiones tomadas al pasar del dominio descrito en la Etapa 1 al modelo de datos, y el motivo de cada una. Las reglas de negocio se citan por su identificador (RN01, RN02, etc.).
 
-## 1. Cambios respecto del modelo preliminar
+## 1. Usuarios y roles
 
-El modelo preliminar de la Etapa I describía una librería que vende su propio catálogo. Durante el modelado, el sistema pasó a funcionar como un marketplace, donde distintos vendedores publican ofertas de libros y los clientes compran esas ofertas.
+Administradores, vendedores y clientes se registran en una única tabla, USUARIO, porque comparten los mismos datos personales y de acceso (RN03). Lo que los distingue es el rol: cada usuario tiene exactamente uno (RN01), y los roles se guardan en su propia tabla.
 
-Este cambio de enfoque llevó el precio y el stock del libro a una nueva entidad, PUBLICACION. Además, el género se reemplazó por CATEGORIA y se incorporaron IDIOMA, ENCUADERNACION y CONDICION para describir con más detalle cada libro y cada oferta. Por último, la compra pasó a modelarse como pedido y guarda sus propios datos de envío.
+El rol determina qué hace cada usuario en el sistema: el cliente realiza pedidos y el vendedor publica ofertas. Por eso USUARIO se relaciona tanto con PEDIDO como con PUBLICACION.
 
-## 2. Usuarios y roles
+## 2. Direcciones y ubicación
 
-Todos los actores del sistema (administradores, vendedores y clientes) se representan con una única entidad USUARIO, ya que comparten los mismos datos personales y de acceso. Lo que los diferencia es el rol, que se registra en la entidad USUARIO_ROL.
+Las direcciones forman una tabla propia porque un usuario puede registrar varias (RN05). Calle, altura y código postal son obligatorios; piso, departamento y referencia son opcionales.
 
-Cada usuario tiene exactamente un rol, y un mismo rol puede estar asignado a muchos usuarios. Los roles son excluyentes: solo el Cliente realiza pedidos y solo el Vendedor publica ofertas. Por eso USUARIO se relaciona tanto con PEDIDO como con PUBLICACION, y el rol determina cuál de las dos relaciones le corresponde a cada usuario.
+La ubicación se modela en dos niveles: cada dirección pertenece a una ciudad y cada ciudad, a una provincia. Así, el nombre de cada ciudad se registra una sola vez y la provincia se obtiene a través de la ciudad. Dos ciudades pueden llamarse igual si están en provincias distintas.
 
-El atributo es_activo permite dar de baja a un usuario sin eliminarlo. Así, los pedidos y las publicaciones que registró siguen haciendo referencia a él.
+La versión inicial solo carga la provincia de Corrientes. Agregar otras provincias no requiere cambiar la estructura.
 
-## 3. Direcciones y ubicación geográfica
+## 3. Libro y publicación
 
-Las direcciones forman una entidad propia porque un usuario puede registrar varias. Un usuario puede tener cero o más direcciones, ya que no todos los roles las necesitan, y cada dirección pertenece a un único usuario.
+El modelo separa el libro de la oferta:
 
-La ciudad y la provincia no se escriben como texto dentro de la dirección, sino que son entidades separadas: cada dirección pertenece a una CIUDAD y cada ciudad a una PROVINCIA. De esta forma, el nombre de una ciudad se registra una sola vez y no se repite en cada dirección. La dirección no se relaciona directamente con la provincia, porque la provincia se obtiene a través de la ciudad.
+- **LIBRO** es la ficha bibliográfica de una edición, identificada por su ISBN (RN06). Reúne lo que no depende de quién lo vende: título, páginas, año, editorial, categoría, idioma y encuadernación (RN07).
+- **PUBLICACION** es la oferta de un vendedor sobre ese libro, con su propio precio, stock y condición del ejemplar (RN10).
 
-El nombre de una ciudad no es único por sí solo, ya que hay ciudades con el mismo nombre en distintas provincias. Lo que no puede repetirse es la combinación de nombre y provincia. El nombre de la provincia, en cambio, sí es único.
+Gracias a esta separación, un mismo libro puede ofrecerse por varios vendedores, a distintos precios y en distintas condiciones, sin repetir sus datos bibliográficos (RN11). Un vendedor no puede tener dos publicaciones vigentes del mismo libro en la misma condición: si tiene más ejemplares, aumenta el stock de la que ya existe.
 
-Calle, altura y código postal son obligatorios. Piso, departamento y referencia son opcionales, porque no todas las direcciones los tienen.
+## 4. Autores
 
-## 4. Libros y autores
+La relación entre libros y autores es de muchos a muchos (RN08) y se resuelve con la tabla intermedia AUTOR_LIBRO. Un autor puede registrarse antes de tener libros asociados.
 
-LIBRO representa la ficha bibliográfica de una edición, identificada por su ISBN. Reúne los datos que no dependen de quién vende el libro: título, año de publicación, número de páginas, editorial, idioma, encuadernación y categoría. Como el ISBN distingue cada edición, la editorial y la encuadernación son propiedades del libro y no de la oferta.
+Solo el nombre y el apellido del autor son obligatorios. El resto de sus datos (nacionalidad, fechas de nacimiento y fallecimiento, y biografía) no siempre se conoce al darlo de alta.
 
-Cada libro pertenece a una sola categoría, está escrito en un solo idioma, lo publica una sola editorial y tiene un único tipo de encuadernación. Estas cuatro relaciones son de uno a muchos: cada valor puede aplicarse a muchos libros o, por el momento, a ninguno.
+El nombre no es único, porque pueden existir autores homónimos. Para distinguirlos hay dos datos opcionales:
 
-La relación entre libros y autores es de muchos a muchos, porque un libro puede tener varios autores y un autor puede escribir varios libros. Se resuelve con la tabla intermedia LIBRO_AUTOR. Todo libro debe tener al menos un autor, mientras que un autor puede registrarse antes de tener libros asociados. El nombre del autor no es único, para admitir autores homónimos.
+- **ISNI.** Es el identificador internacional de autores. No puede repetirse cuando se registra.
+- **Diferencial.** Es una nota breve que distingue al autor de otros con el mismo nombre, como un seudónimo.
 
-## 5. Publicaciones
+## 5. Pedidos y detalle
 
-PUBLICACION representa la oferta de un libro hecha por un vendedor. Se separa de LIBRO porque el precio, el stock y la condición del ejemplar dependen de cada vendedor. Así, un mismo libro puede ofrecerse por varios vendedores, en distintas condiciones y a distintos precios, sin repetir sus datos bibliográficos.
+Cada pedido pertenece a un único cliente y puede incluir publicaciones de varios vendedores (RN15, RN16). La relación entre pedidos y publicaciones es de muchos a muchos y tiene atributos propios, la cantidad y el precio unitario. Por eso se transforma en la tabla PEDIDO_DETALLE, donde cada fila es un renglón del pedido. Una publicación aparece una sola vez por pedido; si se compran varios ejemplares, se indica en la cantidad.
 
-Cada publicación corresponde a un único libro, a un único vendedor y a una única condición, registrada en CONDICION. Un libro puede no tener publicaciones o tener muchas, y un vendedor puede publicar tantas ofertas como quiera.
+Tres decisiones protegen el historial de las ventas:
 
-Un vendedor puede tener una sola publicación por libro y condición. Si tiene más ejemplares en la misma condición, aumenta el stock de esa publicación en lugar de crear otra. Esto evita ofertas duplicadas del mismo producto.
+- **Precio histórico.** El renglón guarda el precio unitario del momento de la compra, en lugar de tomarlo de la publicación. Si el vendedor cambia el precio, los pedidos anteriores no se alteran (RN26).
+- **Dirección copiada.** El pedido guarda una copia de la dirección de entrega, en lugar de referenciar una dirección del cliente. Así la conserva aunque el cliente la edite o la elimine (RN27). Solo la ciudad se referencia, porque pertenece a un catálogo que el cliente no modifica.
+- **Total calculado.** El total del pedido no se almacena: se calcula a partir del detalle (RN17). De este modo no puede quedar inconsistente con los renglones.
 
-El atributo es_activo permite pausar o dar de baja una publicación sin eliminarla, de modo que los pedidos que la incluyen conservan su referencia.
+## 6. Pagos
 
-## 6. Pedidos
+Cada pago es un intento de cobro de un pedido. Un pedido puede tener varios: si un intento es rechazado o cancelado, se registra uno nuevo y el anterior se conserva como historial (RN24, RN29). Cada intento usa un único método de pago y tiene un estado (RN21 a RN23).
 
-Cada pedido lo realiza un único cliente, y un cliente puede tener muchos pedidos. Un mismo pedido puede incluir publicaciones de distintos vendedores y se envía a una sola dirección.
+El pago guarda su propio importe aunque el total del pedido pueda calcularse. Funciona como constancia del monto procesado en ese intento.
 
-La relación entre pedidos y publicaciones es de muchos a muchos: un pedido contiene una o más publicaciones, y una publicación puede formar parte de muchos pedidos. Como la relación tiene atributos propios (cantidad y precio unitario), se transforma en la tabla PEDIDO_DETALLE, donde cada fila es un renglón del pedido. Una publicación aparece una sola vez por pedido; si se compran varios ejemplares, se indica en la cantidad.
+Además, registra dos fechas con significados distintos (RN25):
 
-El precio unitario se copia en el detalle al momento de la compra, en lugar de tomarse de la publicación. Si el vendedor modifica el precio más adelante, los pedidos ya registrados mantienen el valor con el que se vendieron.
+- **Fecha de creación.** Indica cuándo se inició el intento y siempre está presente.
+- **Fecha de pago.** Indica cuándo se acreditó y queda vacía hasta que el pago se aprueba.
 
-El importe total del pedido es un atributo derivado, que se calcula como la suma de cantidad por precio unitario de todos sus renglones. Por eso aparece en el DER pero no se almacena en el modelo relacional, lo que evita que el total quede inconsistente con el detalle.
+## 7. Bajas lógicas
 
-La dirección de envío también se copia en el pedido (calle, altura, piso, departamento, código postal y referencia) en lugar de hacer referencia a DIRECCION. Así, el pedido conserva la dirección tal como estaba al momento de la compra, aunque después el usuario la modifique o la elimine. La ciudad, en cambio, se referencia con una clave foránea, porque forma parte de un catálogo que no depende de los cambios que haga el usuario.
+Los usuarios y las publicaciones no se eliminan: se marcan como dados de baja, para que los pedidos que los incluyen sigan completos (RN28).
 
-## 7. Pagos
+- **Usuarios.** La baja se registra con una fecha de eliminación; mientras está vacía, el usuario está activo. A diferencia de un simple indicador, la fecha registra además cuándo ocurrió la baja.
+- **Publicaciones.** Se distinguen dos situaciones. La pausa es temporal y se indica con la marca de disponibilidad. La baja es definitiva y se registra con una fecha de eliminación. Una publicación dada de baja nunca puede figurar como disponible.
 
-Un pedido puede tener cero o más pagos, y cada pago pertenece a un único pedido. Cada pago representa un intento: si uno es rechazado o cancelado, se registra uno nuevo y el anterior se conserva como historial. Un pedido recién creado todavía no tiene pagos, y se completa con un único pago aprobado por el total.
+La regla que impide duplicar una oferta (sección 3) solo considera las publicaciones vigentes, es decir, las que no fueron dadas de baja. Así, un vendedor puede volver a publicar un libro cuya oferta anterior dio de baja. Una publicación pausada sigue vigente: para volver a ofrecerla, el vendedor la reactiva.
 
-Cada pago utiliza un único método, registrado en PAGO_METODO (tarjeta de débito, tarjeta de crédito o transferencia), y tiene un estado registrado en PAGO_ESTADO.
+En línea con este criterio, las claves foráneas no propagan borrados: no se puede eliminar una fila mientras otra tabla la referencie.
 
-El importe se guarda en cada pago aunque el total del pedido pueda calcularse a partir del detalle. Funciona como constancia del monto que se procesó en ese intento, independiente del cálculo del pedido.
+## 8. Catálogos
 
-El pago registra dos fechas con significado distinto. La fecha de creación indica cuándo se inició el intento y siempre está presente. La fecha de pago indica cuándo se acreditó, por lo que queda vacía mientras el pago no se aprueba.
+Los roles, las categorías, los idiomas, las editoriales, las encuadernaciones, las condiciones, las nacionalidades, los métodos de pago y los estados son tablas propias, en lugar de texto escrito en cada registro. Así se evitan distintas formas de escribir un mismo valor, se garantiza que solo se usen valores válidos y se pueden agregar valores nuevos sin modificar la estructura. Todos los catálogos tienen el mismo formato: un identificador y un nombre que no puede repetirse.
 
-## 8. Catálogos y estados
+Los estados del pedido y del pago están en tablas separadas porque describen procesos distintos: el avance de la compra (RN19, RN20) y el resultado de cada intento de pago (RN23). Aunque algunos nombres coinciden, como «Pendiente» o «Cancelado», no significan lo mismo en cada proceso.
 
-Los roles, las categorías, los idiomas, las editoriales, las encuadernaciones, las condiciones, los métodos de pago y los estados son entidades propias, en lugar de valores escritos en cada registro. Así se evitan distintas formas de escribir un mismo valor, se garantiza que solo se usen valores válidos y se pueden agregar valores nuevos sin modificar la estructura del modelo. Por la misma razón, el nombre de cada valor es único dentro de su catálogo.
+## 9. Claves
 
-Los estados del pedido y del pago están en entidades separadas, PEDIDO_ESTADO y PAGO_ESTADO, porque describen procesos distintos: el avance de la compra y el resultado de cada intento de pago. PEDIDO_ESTADO incluye además una descripción que explica el significado de cada estado. Tanto el pedido como el pago guardan únicamente una referencia a su estado actual.
+Todas las tablas tienen una clave primaria sustituta de una sola columna, con el nombre de la tabla seguido de `_id` (por ejemplo, `libro_id`). Con este criterio uniforme, todas las relaciones se establecen del mismo modo: con una única clave foránea.
 
-## 9. Claves e identificadores
+Los identificadores naturales, como el ISBN del libro o el DNI y el email del usuario, se definen como únicos, pero no se usan como clave primaria.
 
-Todas las tablas tienen una clave primaria sustituta de una sola columna, cuyo nombre es el de la tabla seguido de _id (por ejemplo, libro_id). Se eligió este criterio por uniformidad: todas las relaciones se establecen de la misma manera, mediante una única clave foránea.
-
-Los identificadores naturales, como el ISBN del libro o el DNI y el email del usuario, se definen como únicos, pero la clave primaria sigue siendo la sustituta.
-
-Las tablas intermedias LIBRO_AUTOR y PEDIDO_DETALLE siguen el mismo criterio: tienen su propia clave sustituta en lugar de una clave compuesta por sus dos claves foráneas. Para evitar filas duplicadas, la combinación de ambas claves foráneas se define como única.
+Las tablas intermedias siguen el mismo criterio: tienen su propia clave sustituta en lugar de una clave compuesta. Para evitar filas repetidas, la combinación de sus dos claves foráneas se define como única.

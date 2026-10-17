@@ -1,197 +1,97 @@
-# Modelo relacional - Etapa II
+# Modelo relacional - Etapa 2
 
-Este documento describe el modelo relacional obtenido a partir del diagrama entidad-relación: cómo se transformó cada elemento del DER y qué estructura tiene cada tabla.
+Este documento describe el modelo relacional: cómo se obtuvo a partir del diagrama entidad-relación y qué guarda cada tabla. El motivo de cada decisión está en [Decisiones de diseño](decisiones-diseno.md), y el análisis de la 3FN, en [Normalización](normalizacion.md).
 
-![Modelo relacional](relacional/relacional.png)
+## 1. Resumen
 
-## 1. Resumen del modelo
+El modelo tiene 21 tablas:
 
-El modelo está formado por 20 tablas. Siete son las principales del negocio: USUARIO, DIRECCION, AUTOR, LIBRO, PUBLICACION, PEDIDO y PAGO. Dos son intermedias y resuelven relaciones de muchos a muchos: LIBRO_AUTOR y PEDIDO_DETALLE. Dos describen la ubicación geográfica: PROVINCIA y CIUDAD. Las nueve restantes son catálogos: USUARIO_ROL, CATEGORIA, IDIOMA, EDITORIAL, ENCUADERNACION, CONDICION, PEDIDO_ESTADO, PAGO_ESTADO y PAGO_METODO.
+| Grupo       | Tablas                                                                                                                      | Cantidad |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Principales | USUARIO, DIRECCION, AUTOR, LIBRO, PUBLICACION, PEDIDO, PAGO                                                                 | 7        |
+| Intermedias | AUTOR_LIBRO, PEDIDO_DETALLE                                                                                                 | 2        |
+| Ubicación   | PROVINCIA, CIUDAD                                                                                                           | 2        |
+| Catálogos   | USUARIO_ROL, CATEGORIA, IDIOMA, EDITORIAL, ENCUADERNACION, CONDICION, NACIONALIDAD, PEDIDO_ESTADO, PAGO_ESTADO, PAGO_METODO | 10       |
 
-La cantidad supera la referencia de 6 a 10 tablas. El ciclo de venta se sostiene con las tablas principales y las intermedias. Las otras once guardan valores que, de lo contrario, se repetirían como texto en cada registro. Son tablas pequeñas y de contenido estable, que no agregan pasos a la operación de venta.
+La cantidad supera la referencia de 6 a 10 tablas. El ciclo de venta se sostiene con las nueve tablas principales e intermedias. Las doce restantes son listas de valores pequeñas y estables: evitan repetir texto en cada registro y no agregan pasos a la operación de venta.
 
-Cada tabla tiene una clave primaria de una sola columna, llamada con el nombre de la tabla seguido de `_id`. Cada clave foránea conserva el nombre de la clave primaria a la que hace referencia. Por ejemplo, `libro_id` en PUBLICACION referencia a LIBRO.
+## 2. Del DER al modelo relacional
 
-## 2. Transformación del DER
+La transformación siguió estas reglas:
 
-Cada entidad del DER se transformó en una tabla con el mismo nombre, y sus atributos pasaron a ser columnas. Los identificadores se convirtieron en claves primarias y los atributos únicos conservaron esa restricción. Los atributos opcionales (O) dieron lugar a columnas no obligatorias.
+- **Entidades.** Cada entidad se convirtió en una tabla con el mismo nombre, y sus atributos, en columnas. Los atributos opcionales dieron lugar a columnas que admiten valores vacíos.
+- **Relaciones de uno a muchos.** Se representan con una clave foránea en la tabla del lado «muchos». Todas son obligatorias, salvo la nacionalidad del autor.
+- **Relaciones de muchos a muchos.** Se transformaron en tablas intermedias. La relación entre autores y libros dio lugar a AUTOR_LIBRO. La relación entre pedidos y publicaciones dio lugar a PEDIDO_DETALLE, que además incorpora sus atributos propios: la cantidad y el precio unitario.
+- **Atributo derivado.** El total del pedido se calcula a partir del detalle, por lo que no se almacena.
 
-Las 17 relaciones de uno a muchos se representaron con una clave foránea en la tabla del lado "muchos", que referencia a la tabla del lado "uno". En todas ellas la participación del lado "uno" es obligatoria (por ejemplo, todo pedido pertenece a un usuario), por lo que ninguna clave foránea admite valores vacíos.
+El modelo no tiene relaciones de uno a uno.
 
-Las dos relaciones de muchos a muchos se transformaron en tablas intermedias. La relación *escribe*, entre LIBRO y AUTOR, dio lugar a LIBRO_AUTOR. La relación *contiene*, entre PEDIDO y PUBLICACION, dio lugar a PEDIDO_DETALLE, que además incorpora los atributos propios de la relación: `cantidad` y `precio_unitario`. Cada tabla intermedia tiene su propia clave primaria, y la combinación de sus dos claves foráneas es única.
+## 3. Convenciones
 
-El atributo derivado `importe_total` de PEDIDO no se trasladó al modelo, ya que se obtiene a partir de PEDIDO_DETALLE. El DER no contiene relaciones de uno a uno.
+- Cada tabla tiene una clave primaria de una sola columna, con el nombre de la tabla seguido de `_id`.
+- Cada clave foránea lleva el mismo nombre que la clave primaria a la que apunta. Por ejemplo, `libro_id` en PUBLICACION referencia a LIBRO.
 
-## 3. Estructura de las tablas
+## 4. Tablas
 
-Cada tabla se describe con las siguientes columnas:
+En las tablas siguientes, la columna **Referencia a** indica las tablas a las que apuntan sus claves foráneas, y **No se repite**, los datos que deben ser únicos.
 
-- **Clave** indica si el atributo es clave primaria (PK) o clave foránea (FK).
-- **Obligatorio** indica si el atributo debe tener valor.
-- **Único** indica si el valor no puede repetirse. La marca (1) significa que lo que no puede repetirse es la combinación de los atributos marcados.
-- **Referencia** indica la tabla a la que apunta cada clave foránea.
+### 4.1 Catálogos
 
-### 3.1 Catálogos
+Los diez catálogos tienen la misma estructura: un identificador y un nombre que no puede repetirse.
 
-Ocho catálogos comparten la misma estructura: un identificador y un nombre que no puede repetirse. Son USUARIO_ROL, CATEGORIA, IDIOMA, EDITORIAL, ENCUADERNACION, CONDICION, PAGO_ESTADO y PAGO_METODO. En cada uno, el identificador toma el nombre de la tabla; por ejemplo, en CATEGORIA es `categoria_id`. PEDIDO_ESTADO también es un catálogo, pero se describe junto con los pedidos porque agrega una descripción.
+| Catálogo       | Qué clasifica                                 | Ejemplos de valores                                  |
+| -------------- | --------------------------------------------- | ---------------------------------------------------- |
+| USUARIO_ROL    | Rol del usuario                               | Administrador, Vendedor, Cliente                     |
+| CATEGORIA      | Género literario o área temática del libro    | Novela, Poesía, Informática, Derecho                 |
+| IDIOMA         | Idioma del libro                              | Español, Inglés, Portugués                           |
+| EDITORIAL      | Editorial del libro                           | Planeta, Sudamericana, Eudeba                        |
+| ENCUADERNACION | Encuadernación del libro                      | Tapa blanda, Tapa dura                               |
+| CONDICION      | Estado de conservación del ejemplar publicado | Nuevo, Como nuevo, Muy bueno, Bueno, Aceptable       |
+| NACIONALIDAD   | Nacionalidad del autor                        | Argentina, Uruguaya, Británica                       |
+| PEDIDO_ESTADO  | Etapa en que se encuentra el pedido           | Pendiente, Confirmado, Entregado, Cancelado          |
+| PAGO_ESTADO    | Resultado de cada intento de pago             | Pendiente, Aprobado, Rechazado, Cancelado            |
+| PAGO_METODO    | Medio con que se paga                         | Tarjeta de débito, Tarjeta de crédito, Transferencia |
 
-| Atributo         | Clave | Obligatorio | Único | Referencia |
-|------------------|-------|-------------|-------|------------|
-| `<catalogo>_id`  | PK    | Sí          | Sí    |            |
-| nombre           |       | Sí          | Sí    |            |
+### 4.2 Usuarios y ubicación
 
-### 3.2 Usuarios y ubicación
+| Tabla     | Qué guarda                                                                                          | Referencia a    | No se repite                  |
+| --------- | --------------------------------------------------------------------------------------------------- | --------------- | ----------------------------- |
+| PROVINCIA | Nombre de la provincia.                                                                             | —               | Nombre                        |
+| CIUDAD    | Nombre de la ciudad.                                                                                | PROVINCIA       | Nombre dentro de la provincia |
+| USUARIO   | Nombre, apellido, DNI, email, teléfono, fecha de nacimiento, hash de la contraseña y fecha de baja. | USUARIO_ROL     | DNI; email                    |
+| DIRECCION | Calle, altura, piso, departamento, código postal y una referencia para la entrega.                  | USUARIO, CIUDAD | —                             |
 
-USUARIO reúne a todos los actores del sistema y referencia su rol en USUARIO_ROL. Cada DIRECCION pertenece a un usuario y a una ciudad, y cada CIUDAD pertenece a una PROVINCIA. Dos ciudades pueden llamarse igual, pero no dentro de la misma provincia.
+### 4.3 Libros y publicaciones
 
-#### USUARIO
+| Tabla       | Qué guarda                                                                             | Referencia a                                 | No se repite                                                  |
+| ----------- | -------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------- |
+| AUTOR       | Nombre, apellido, ISNI, fechas de nacimiento y fallecimiento, diferencial y biografía. | NACIONALIDAD (opcional)                      | ISNI, cuando se registra                                      |
+| LIBRO       | ISBN, título, cantidad de páginas y año de publicación.                                | CATEGORIA, IDIOMA, EDITORIAL, ENCUADERNACION | ISBN                                                          |
+| AUTOR_LIBRO | El vínculo entre un autor y uno de sus libros.                                         | AUTOR, LIBRO                                 | Par autor-libro                                               |
+| PUBLICACION | Precio, stock, disponibilidad y fechas de creación y de baja.                          | USUARIO (vendedor), LIBRO, CONDICION         | Vendedor, libro y condición, entre las publicaciones vigentes |
 
-| Atributo         | Clave | Obligatorio | Único | Referencia  |
-|------------------|-------|-------------|-------|-------------|
-| usuario_id       | PK    | Sí          | Sí    |             |
-| nombre           |       | Sí          |       |             |
-| apellido         |       | Sí          |       |             |
-| dni              |       | Sí          | Sí    |             |
-| email            |       | Sí          | Sí    |             |
-| telefono         |       | Sí          |       |             |
-| fecha_nacimiento |       | Sí          |       |             |
-| password_hash    |       | Sí          |       |             |
-| imagen_url       |       | No          |       |             |
-| es_activo        |       | Sí          |       |             |
-| usuario_rol_id   | FK    | Sí          |       | USUARIO_ROL |
+### 4.4 Pedidos y pagos
 
-#### PROVINCIA
+| Tabla          | Qué guarda                                                                                                          | Referencia a                                          | No se repite           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ---------------------- |
+| PEDIDO         | Fecha del pedido y copia de la dirección de entrega: calle, altura, piso, departamento, código postal y referencia. | USUARIO (cliente), PEDIDO_ESTADO, CIUDAD (de entrega) | —                      |
+| PEDIDO_DETALLE | Cantidad y precio unitario de cada renglón.                                                                         | PEDIDO, PUBLICACION                                   | Par pedido-publicación |
+| PAGO           | Importe, fecha de creación y fecha de pago.                                                                         | PEDIDO, PAGO_METODO, PAGO_ESTADO                      | —                      |
 
-| Atributo     | Clave | Obligatorio | Único | Referencia |
-|--------------|-------|-------------|-------|------------|
-| provincia_id | PK    | Sí          | Sí    |            |
-| nombre       |       | Sí          | Sí    |            |
+## 5. Reglas que el esquema no garantiza
 
-#### CIUDAD
+Las claves y las restricciones de unicidad no alcanzan para asegurar algunas reglas de negocio, porque dependen de datos de otras filas o de otras tablas:
 
-| Atributo     | Clave | Obligatorio | Único | Referencia |
-|--------------|-------|-------------|-------|------------|
-| ciudad_id    | PK    | Sí          | Sí    |            |
-| nombre       |       | Sí          | (1)   |            |
-| provincia_id | FK    | Sí          | (1)   | PROVINCIA  |
+| Reglas     | Qué debe controlarse                                                                                                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| RN04, RN10 | Que quien realiza un pedido tenga el rol de cliente, y quien publica, el de vendedor.                                                                                                                                    |
+| RN08, RN15 | Que todo libro tenga al menos un autor y todo pedido, al menos un renglón. La clave foránea asegura que cada fila intermedia pertenezca a un libro o a un pedido, pero no que cada libro o pedido tenga filas asociadas. |
+| RN12, RN13 | Que solo se agreguen a un pedido publicaciones disponibles, vigentes y con stock suficiente.                                                                                                                             |
+| RN14       | Que el stock se descuente al confirmarse el pedido.                                                                                                                                                                      |
+| RN18       | Que la dirección copiada en el pedido sea una de las direcciones registradas por el cliente.                                                                                                                             |
+| RN19, RN20 | Que el pedido avance por sus estados en el orden previsto y solo se cancele mientras está pendiente.                                                                                                                     |
+| RN22       | Que el importe de cada pago coincida con el total del pedido.                                                                                                                                                            |
+| RN24       | Que un nuevo intento de pago solo se registre si el anterior fue rechazado o cancelado, y que cada pedido tenga a lo sumo un pago aprobado.                                                                              |
+| RN25       | Que la fecha de pago se registre cuando el pago se aprueba.                                                                                                                                                              |
 
-#### DIRECCION
-
-| Atributo      | Clave | Obligatorio | Único | Referencia |
-|---------------|-------|-------------|-------|------------|
-| direccion_id  | PK    | Sí          | Sí    |            |
-| calle         |       | Sí          |       |            |
-| altura        |       | Sí          |       |            |
-| piso          |       | No          |       |            |
-| departamento  |       | No          |       |            |
-| codigo_postal |       | Sí          |       |            |
-| referencia    |       | No          |       |            |
-| usuario_id    | FK    | Sí          |       | USUARIO    |
-| ciudad_id     | FK    | Sí          |       | CIUDAD     |
-
-### 3.3 Libros
-
-LIBRO referencia a los catálogos CATEGORIA, IDIOMA, EDITORIAL y ENCUADERNACION, y su ISBN no puede repetirse. El vínculo con AUTOR se registra en LIBRO_AUTOR, donde cada fila asocia un libro con uno de sus autores sin repetir el mismo par.
-
-#### AUTOR
-
-| Atributo | Clave | Obligatorio | Único | Referencia |
-|----------|-------|-------------|-------|------------|
-| autor_id | PK    | Sí          | Sí    |            |
-| nombre   |       | Sí          |       |            |
-
-#### LIBRO
-
-| Atributo          | Clave | Obligatorio | Único | Referencia     |
-|-------------------|-------|-------------|-------|----------------|
-| libro_id          | PK    | Sí          | Sí    |                |
-| isbn              |       | Sí          | Sí    |                |
-| titulo            |       | Sí          |       |                |
-| anio_publicacion  |       | Sí          |       |                |
-| nro_paginas       |       | Sí          |       |                |
-| encuadernacion_id | FK    | Sí          |       | ENCUADERNACION |
-| categoria_id      | FK    | Sí          |       | CATEGORIA      |
-| idioma_id         | FK    | Sí          |       | IDIOMA         |
-| editorial_id      | FK    | Sí          |       | EDITORIAL      |
-
-#### LIBRO_AUTOR
-
-| Atributo       | Clave | Obligatorio | Único | Referencia |
-|----------------|-------|-------------|-------|------------|
-| libro_autor_id | PK    | Sí          | Sí    |            |
-| autor_id       | FK    | Sí          | (1)   | AUTOR      |
-| libro_id       | FK    | Sí          | (1)   | LIBRO      |
-
-### 3.4 Publicaciones
-
-PUBLICACION vincula un libro con el usuario que lo ofrece y con la condición del ejemplar, registrada en CONDICION. La combinación de vendedor, libro y condición no puede repetirse.
-
-#### PUBLICACION
-
-| Atributo       | Clave | Obligatorio | Único | Referencia |
-|----------------|-------|-------------|-------|------------|
-| publicacion_id | PK    | Sí          | Sí    |            |
-| stock          |       | Sí          |       |            |
-| precio         |       | Sí          |       |            |
-| es_activo      |       | Sí          |       |            |
-| usuario_id     | FK    | Sí          | (1)   | USUARIO    |
-| libro_id       | FK    | Sí          | (1)   | LIBRO      |
-| condicion_id   | FK    | Sí          | (1)   | CONDICION  |
-
-### 3.5 Pedidos
-
-PEDIDO referencia al usuario que lo realiza, a su estado actual en PEDIDO_ESTADO y a la ciudad de envío. El resto de la dirección de envío se guarda en sus propios atributos. Cada renglón de PEDIDO_DETALLE asocia el pedido con una publicación, y una misma publicación no puede repetirse dentro de un pedido.
-
-#### PEDIDO_ESTADO
-
-| Atributo         | Clave | Obligatorio | Único | Referencia |
-|------------------|-------|-------------|-------|------------|
-| pedido_estado_id | PK    | Sí          | Sí    |            |
-| nombre           |       | Sí          | Sí    |            |
-| descripcion      |       | Sí          |       |            |
-
-#### PEDIDO
-
-| Atributo            | Clave | Obligatorio | Único | Referencia    |
-|---------------------|-------|-------------|-------|---------------|
-| pedido_id           | PK    | Sí          | Sí    |               |
-| fecha_pedido        |       | Sí          |       |               |
-| envio_calle         |       | Sí          |       |               |
-| envio_altura        |       | Sí          |       |               |
-| envio_piso          |       | No          |       |               |
-| envio_departamento  |       | No          |       |               |
-| envio_codigo_postal |       | Sí          |       |               |
-| envio_referencia    |       | No          |       |               |
-| usuario_id          | FK    | Sí          |       | USUARIO       |
-| pedido_estado_id    | FK    | Sí          |       | PEDIDO_ESTADO |
-| ciudad_id           | FK    | Sí          |       | CIUDAD        |
-
-#### PEDIDO_DETALLE
-
-| Atributo          | Clave | Obligatorio | Único | Referencia  |
-|-------------------|-------|-------------|-------|-------------|
-| pedido_detalle_id | PK    | Sí          | Sí    |             |
-| cantidad          |       | Sí          |       |             |
-| precio_unitario   |       | Sí          |       |             |
-| pedido_id         | FK    | Sí          | (1)   | PEDIDO      |
-| publicacion_id    | FK    | Sí          | (1)   | PUBLICACION |
-
-### 3.6 Pagos
-
-Cada PAGO pertenece a un pedido y referencia el método utilizado, registrado en PAGO_METODO, y su estado, registrado en PAGO_ESTADO. La fecha de pago es su único atributo no obligatorio.
-
-#### PAGO
-
-| Atributo       | Clave | Obligatorio | Único | Referencia  |
-|----------------|-------|-------------|-------|-------------|
-| pago_id        | PK    | Sí          | Sí    |             |
-| importe        |       | Sí          |       |             |
-| fecha_creacion |       | Sí          |       |             |
-| fecha_pago     |       | No          |       |             |
-| pago_estado_id | FK    | Sí          |       | PAGO_ESTADO |
-| pago_metodo_id | FK    | Sí          |       | PAGO_METODO |
-| pedido_id      | FK    | Sí          |       | PEDIDO      |
-
-## 4. Restricciones no expresadas por el esquema
-
-Algunas reglas del modelo no quedan garantizadas solo con las claves y las restricciones de unicidad. El usuario referenciado por PEDIDO debe tener el rol Cliente, y el referenciado por PUBLICACION, el rol Vendedor. Todo pedido debe tener al menos un renglón en PEDIDO_DETALLE y todo libro al menos un autor en LIBRO_AUTOR: la clave foránea asegura que cada fila de la tabla intermedia pertenezca a un pedido o a un libro, pero no que cada pedido o libro tenga filas asociadas. Por último, cada pedido puede tener como máximo un pago aprobado.
+El control de estas reglas corresponde a los mecanismos de la Etapa 5: procedimientos, transacciones y triggers.
