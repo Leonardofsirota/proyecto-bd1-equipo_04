@@ -1,0 +1,62 @@
+@startuml casos-uso
+' Diagrama de casos de uso de las consultas de sql/consultas.
+' Se excluye control/control-carga-datos.sql: verifica la precarga de la base
+' y no corresponde a ningún rol de USUARIO.
+
+skin rose
+left to right direction
+skinparam ranksep 220
+
+<style>
+rectangle {
+  HorizontalAlignment center
+}
+</style>
+
+actor Cliente
+actor Vendedor
+actor Administrador
+
+rectangle "Sistema de venta de libros" {
+  ' catalogo/ y comprobantes/
+  usecase "Consultar ofertas vigentes\npor libro" as UC_OFERTAS
+  usecase "Consultar comprobante\nde venta" as UC_COMPROBANTE
+
+  ' ventas/
+  usecase "Consultar total de ventas\npor vendedor" as UC_VENTAS_VENDEDOR
+  usecase "Consultar total de ventas\npor categoría" as UC_VENTAS_CATEGORIA
+  usecase "Consultar libros\nmás vendidos" as UC_MAS_VENDIDOS
+
+  ' pagos/
+  usecase "Consultar pedidos\ncon pago aprobado" as UC_CON_PAGO
+  usecase "Consultar pedidos\nsin pago aprobado" as UC_SIN_PAGO
+}
+
+' Enlaces ocultos: mantienen los casos en una columna, agrupados por carpeta.
+' Se escriben de abajo hacia arriba porque Graphviz invierte el orden dentro
+' del rectángulo; así los casos se dibujan en el orden en que se declaran.
+UC_SIN_PAGO -[hidden]right- UC_CON_PAGO
+UC_CON_PAGO -[hidden]right- UC_MAS_VENDIDOS
+UC_MAS_VENDIDOS -[hidden]right- UC_VENTAS_CATEGORIA
+UC_VENTAS_CATEGORIA -[hidden]right- UC_VENTAS_VENDEDOR
+UC_VENTAS_VENDEDOR -[hidden]right- UC_COMPROBANTE
+UC_COMPROBANTE -[hidden]right- UC_OFERTAS
+
+Cliente --> UC_OFERTAS
+Cliente --> UC_COMPROBANTE
+
+Vendedor --> UC_VENTAS_VENDEDOR
+Vendedor --> UC_VENTAS_CATEGORIA
+Vendedor --> UC_MAS_VENDIDOS
+Vendedor --> UC_CON_PAGO
+Vendedor --> UC_SIN_PAGO
+
+' Con la flecha invertida, el Administrador queda a la derecha del sistema y
+' sus líneas no se cruzan con las del Vendedor.
+UC_VENTAS_VENDEDOR <-- Administrador
+UC_VENTAS_CATEGORIA <-- Administrador
+UC_MAS_VENDIDOS <-- Administrador
+UC_CON_PAGO <-- Administrador
+UC_SIN_PAGO <-- Administrador
+
+@enduml
