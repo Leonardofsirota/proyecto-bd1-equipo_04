@@ -39,10 +39,10 @@ Además, todas las restricciones tienen su nombre explícito, con el prefijo que
 | ------------------------------------------ | ------------------------------------------------------------- |
 | DDL sobre un servidor sin la base          | Crea la base con sus 21 tablas.                               |
 | DDL por segunda vez                        | Avisa que la base ya existe y se detiene sin modificar nada.  |
-| Carga de datos sobre tablas vacías         | Inserta 244 filas y confirma «Precarga finalizada…».          |
-| Carga de datos por segunda vez             | Avisa que la base ya tiene datos; siguen siendo 244 filas.    |
+| Carga de datos sobre tablas vacías         | Inserta 6.173 filas y confirma «Precarga finalizada…».        |
+| Carga de datos por segunda vez             | Avisa que la base ya tiene datos; siguen siendo 6.173 filas.  |
 | Carga con un error en el último `INSERT`   | Informa el error y las 21 tablas quedan vacías.               |
-| Carga con la sesión en español             | Inserta las mismas 244 filas, con fechas idénticas.           |
+| Carga con la sesión en español             | Inserta las mismas 6.173 filas, con fechas idénticas.         |
 
 **Todo o nada.** Para provocar el error se alteró una copia del script de datos, con importe cero en el último pago. El motor rechazó esa fila por `chk_pago_importe` y deshizo todo lo insertado antes: no quedó una carga a medias.
 
@@ -73,7 +73,7 @@ Algunas reglas de negocio no las controla el esquema, porque dependen de otras f
 | RN28       | Pedidos realizados por un cliente después de su baja.                                             |
 | —          | Pagos iniciados antes que su pedido.                                                              |
 
-También se confirmó el escenario del precio histórico (RN26): tres renglones de los pedidos 1 y 3 guardan un precio unitario distinto del precio actual de su publicación.
+También se confirmó el escenario del precio histórico (RN26): 795 de los 1.290 renglones guardan un precio unitario distinto del precio actual de su publicación, entre ellos los dos del pedido 94.
 
 Para una revisión visual, `sql/consultas/consulta-control-carga-datos.sql` muestra el contenido completo de cada tabla.
 
@@ -105,7 +105,7 @@ UPDATE dbo.PUBLICACION SET fecha_eliminacion = GETDATE() WHERE publicacion_id = 
 | La categoría «novela», cuando ya existe «Novela»                | Rechazado | `uq_categoria_nombre`                    |
 | La categoría «Poesia», cuando ya existe «Poesía»                | Aceptado  | La intercalación distingue tildes.       |
 | Un ISBN o un ISNI ya registrados                                | Rechazado | `uq_libro_isbn`, `uq_autor_isni`         |
-| Un tercer autor sin ISNI                                        | Aceptado  | El índice filtrado ignora los vacíos.    |
+| Otro autor sin ISNI                                             | Aceptado  | El índice filtrado ignora los vacíos.    |
 | Una segunda publicación vigente del mismo libro y condición     | Rechazado | `uq_publicacion_usuario_libro_condicion` |
 | Volver a publicar un libro después de dar de baja la oferta     | Aceptado  | El índice filtrado ignora las bajas.     |
 | La misma publicación dos veces en un pedido                     | Rechazado | `uq_pedido_detalle_pedido_publicacion`   |
@@ -149,12 +149,12 @@ Se probaron los 18 `CHECK`, cada uno con al menos un valor inválido, y tres col
 
 Estas pruebas comprueban que los cambios posteriores no alteran las ventas ya registradas:
 
-| Operación                                                 | Efecto sobre los pedidos                                         | Regla |
-| --------------------------------------------------------- | ---------------------------------------------------------------- | ----- |
-| Subir el precio de la publicación 1 de $18.500 a $30.000  | El pedido 1 conserva su total: $39.900.                          | RN26  |
-| Cambiar la calle de la dirección 1                        | El pedido 1 conserva la dirección original: Junín 1234.          | RN27  |
-| Borrar la dirección 2                                     | El pedido 6 conserva su copia: Av. 3 de Abril 850.               | RN27  |
-| Dar de baja al cliente 7 y a la publicación 5             | Los 4 renglones que los involucran siguen pudiendo consultarse.  | RN28  |
+| Operación                                                  | Efecto sobre los pedidos                                         | Regla |
+| ---------------------------------------------------------- | ---------------------------------------------------------------- | ----- |
+| Subir el precio de la publicación 184 de $18.500 a $30.000 | El pedido 94 conserva su total: $39.900.                         | RN26  |
+| Cambiar la calle de la dirección 1                         | El pedido 94 conserva la dirección original: Junín 1234.         | RN27  |
+| Borrar la dirección 2                                      | El pedido 259 conserva su copia: Av. 3 de Abril 850.             | RN27  |
+| Dar de baja al cliente 7 y a la publicación 202            | Los 18 renglones que los involucran siguen pudiendo consultarse. | RN28  |
 
 ## 7. Alcance de las pruebas
 

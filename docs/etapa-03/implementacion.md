@@ -136,40 +136,43 @@ Algunas reglas dependen de otras filas o de otras tablas; por ejemplo, que solo 
 ### 6.1 Cómo se cargan
 
 - **Todo o nada.** La carga corre en una única transacción: si una inserción falla, se deshace todo y las tablas quedan vacías.
-- **Identificadores fijos.** Los ID se cargan de forma explícita, en lugar de dejar que el motor los genere. Así, las referencias apuntan siempre a las mismas filas, y las consultas y los documentos pueden citar «el pedido 3» con la certeza de que es el mismo en cualquier instalación.
+- **Identificadores fijos.** Los ID se cargan de forma explícita, en lugar de dejar que el motor los genere. Así, las referencias apuntan siempre a las mismas filas, y las consultas y los documentos pueden citar «el pedido 3» con la certeza de que es el mismo en cualquier instalación. En publicaciones, pedidos y pagos, además, los ID siguen el orden cronológico.
 - **Fechas sin ambigüedad.** Se escriben en formatos que el motor interpreta igual en cualquier idioma de sesión (`'20260305'` o `'2026-03-05T10:15:00'`). De lo contrario, una fecha como 05/03 podría leerse como 5 de marzo en una instalación y como 3 de mayo en otra.
 - **Datos realistas.** Los títulos, los autores y las ciudades son reales; los 74 municipios de Corrientes provienen de la API Georef de datos.gob.ar. Los DNI, los correos, los teléfonos, los ISBN, los ISNI y los hashes de contraseña son ficticios.
 
 ### 6.2 Cantidad de registros
 
-| Grupo              | Registros por tabla                                                                           |
-| ------------------ | --------------------------------------------------------------------------------------------- |
-| Principales        | USUARIO, DIRECCION, AUTOR, LIBRO, PUBLICACION, PEDIDO y PAGO: 10 cada una                     |
-| Intermedias        | AUTOR_LIBRO: 11; PEDIDO_DETALLE: 17                                                           |
-| Ubicación          | PROVINCIA: 1; CIUDAD: 74                                                                      |
-| Catálogos abiertos | IDIOMA, EDITORIAL y NACIONALIDAD: 10 cada una; CATEGORIA: 20                                  |
-| Catálogos cerrados | USUARIO_ROL y PAGO_METODO: 3; PEDIDO_ESTADO y PAGO_ESTADO: 4; CONDICION: 5; ENCUADERNACION: 2 |
+| Grupo              | Registros por tabla                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| Principales        | USUARIO: 500; DIRECCION: 603; AUTOR: 362; LIBRO: 500; PUBLICACION: 791; PEDIDO: 600; PAGO: 718 |
+| Intermedias        | AUTOR_LIBRO: 581; PEDIDO_DETALLE: 1.290                                                        |
+| Ubicación          | PROVINCIA: 1; CIUDAD: 74                                                                       |
+| Catálogos abiertos | IDIOMA: 10; CATEGORIA: 30; NACIONALIDAD: 32; EDITORIAL: 60                                     |
+| Catálogos cerrados | USUARIO_ROL y PAGO_METODO: 3; PEDIDO_ESTADO y PAGO_ESTADO: 4; CONDICION: 5; ENCUADERNACION: 2  |
 
-La mayoría de las tablas alcanza o supera los 8 a 10 registros requeridos. Las excepciones son deliberadas:
+En total se cargan 6.173 filas. Los 500 usuarios son 3 administradores, 40 vendedores y 457 clientes.
+
+La mayoría de las tablas alcanza o supera los 8 a 10 registros requeridos, y las principales y las intermedias los superan ampliamente. Las excepciones son deliberadas:
 
 - **Catálogos cerrados.** Tienen exactamente los valores que fijan las reglas de negocio o el rubro: tres roles (RN01), tres métodos de pago (RN21), cuatro estados de pago (RN23), cuatro estados de pedido (RN19, RN20), cinco grados de conservación y dos tipos de encuadernación. Agregar valores inventados contradiría esas reglas.
 - **Provincia.** La versión inicial solo contempla Corrientes, como se explica en [Decisiones de diseño](../etapa-02/decisiones-diseno.md) (sección 2). Sus 74 municipios aportan el volumen de la ubicación.
 
 ### 6.3 Escenarios representados
 
-Los datos no son aleatorios: se armaron para que cada situación prevista por las reglas aparezca al menos una vez. Esto también sirve como base para las consultas de la Etapa 4.
+Los datos se armaron para que cada situación prevista por las reglas aparezca varias veces. La tabla indica cuántos casos hay y un ejemplo de cada uno. Esto también sirve como base para las consultas de la Etapa 4.
 
-| Escenario                                                    | Dónde aparece                                                         | Reglas     |
-| ------------------------------------------------------------ | --------------------------------------------------------------------- | ---------- |
-| Precio de venta distinto del precio actual de la publicación | Pedidos 1 y 3                                                         | RN26       |
-| Libro con dos autores                                        | Libro 2                                                               | RN08       |
-| Un libro ofrecido por dos vendedores, en distinta condición  | Libro 4                                                               | RN11       |
-| Pedido con publicaciones de varios vendedores                | Pedidos 5, 7, 8 y 10                                                  | RN16       |
-| Pago rechazado seguido de uno aprobado                       | Pedido 3                                                              | RN24, RN29 |
-| Pedidos en cada estado                                       | Pendientes: 9 y 10; confirmado: 8; cancelado: 4; el resto, entregados | RN19, RN20 |
-| Publicación agotada y publicación dada de baja               | Publicaciones 7 y 10                                                  | RN12, RN28 |
-| Cliente dado de baja que conserva su historial               | Usuario 10                                                            | RN28       |
-| Cliente con dos direcciones                                  | Usuario 6                                                             | RN05       |
-| Autores sin ISNI                                             | Autores 7 y 10                                                        | —          |
+| Escenario                                                      | Casos                                                         | Ejemplo                                       | Reglas     |
+| -------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------- | ---------- |
+| Precio de venta distinto del precio actual de la publicación   | 795 de los 1.290 renglones                                    | Pedido 94                                     | RN26       |
+| Libro con varios autores                                       | 58 libros, con dos a cuatro autores                           | Libro 2                                       | RN08       |
+| Un libro ofrecido por varios vendedores, en distinta condición | 93 libros, con tres o más vendedores                          | Libro 4: seis vendedores, cuatro condiciones  | RN11       |
+| Libro publicado otra vez después de dar de baja la oferta      | 14 publicaciones                                              | Publicación 8, publicada otra vez como la 298 | RN11, RN28 |
+| Pedido con publicaciones de varios vendedores                  | 258 pedidos                                                   | Pedido 216                                    | RN16       |
+| Pago rechazado o cancelado seguido de uno aprobado             | 108 pedidos                                                   | Pedido 151                                    | RN24, RN29 |
+| Pedidos en cada estado                                         | 555 entregados, 12 confirmados, 14 pendientes y 19 cancelados | Pedidos 94, 375, 410 y 179                    | RN19, RN20 |
+| Publicación agotada, pausada o dada de baja                    | 90, 27 y 49 publicaciones                                     | Publicaciones 230, 6 y 247                    | RN12, RN28 |
+| Usuario dado de baja que conserva su historial                 | 23 clientes y 2 vendedores                                    | Cliente 10                                    | RN28       |
+| Cliente con varias direcciones                                 | 70 clientes con dos y 18 con tres                             | Cliente 6                                     | RN05       |
+| Autor sin ISNI                                                 | 49 autores                                                    | Autores 7 y 10                                | —          |
 
 Además, los datos respetan las reglas que el esquema todavía no controla: solo los clientes hacen pedidos y solo los vendedores publican, cada pedido copia una de las direcciones de su cliente, cada pago cubre el total de su pedido y el stock cargado ya tiene descontadas las ventas confirmadas.
