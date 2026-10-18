@@ -75,7 +75,7 @@ Algunas reglas de negocio no las controla el esquema, porque dependen de otras f
 
 También se confirmó el escenario del precio histórico (RN26): 795 de los 1.290 renglones guardan un precio unitario distinto del precio actual de su publicación, entre ellos los dos del pedido 94.
 
-Para una revisión visual, `sql/consultas/consulta-control-carga-datos.sql` muestra el contenido completo de cada tabla.
+Para una revisión visual, `sql/consultas/control/consulta-control-carga-datos.sql` muestra el contenido completo de cada tabla.
 
 ## 5. Restricciones de integridad
 
