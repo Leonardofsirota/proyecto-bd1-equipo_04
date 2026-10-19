@@ -1,12 +1,8 @@
-<div align="center">
-
 # Marketplace de Libros
 
 Sistema online de compra y venta de libros, al estilo de un marketplace.
 
 Este repositorio recopila la documentación académica y los scripts SQL del trabajo práctico integrador de la cátedra Bases de Datos I (FaCENA-UNNE).
-
-</div>
 
 <br>
 
