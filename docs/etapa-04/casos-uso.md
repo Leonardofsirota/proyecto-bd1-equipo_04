@@ -34,5 +34,6 @@ Las dos consultas sin requisito responden a necesidades del dominio: comparar la
 
 Una venta es un pedido con un pago aprobado. Este criterio lo aplican el comprobante y las consultas de `ventas/`; las de `pagos/` separan los pedidos que lo cumplen de los que no.
 
+- **La fecha de una venta es la de aprobación del pago** (`PAGO.fecha_pago`), no la de creación del pedido, que puede quedar pendiente varios días antes de pagarse. El comprobante la muestra como fecha de venta, y los reportes por rango de fechas cuentan cada venta en el período en que se aprobó su pago. Según RN25, esa fecha se registra al aprobarse el pago; los datos de prueba lo cumplen y el motor lo controlará a partir de la Etapa 5.
 - **No se filtra por el estado del pedido.** Según RN19, el pedido se confirma cuando se aprueba su pago, así que el pago aprobado basta. Los [datos de prueba](../etapa-03/pruebas-validacion.md#4-datos-de-prueba) respetan esa regla; el motor la controlará a partir de la Etapa 5.
 - **Un pedido puede tener varios intentos de pago, pero a lo sumo uno aprobado** (RN24, RN29). Las consultas que solo necesitan saber si el pedido es una venta usan `EXISTS`, para no repetir filas por cada intento. Las que muestran datos del pago, como el comprobante y los pedidos con pago aprobado, se unen directamente al pago aprobado: al haber uno solo, no se duplican filas.
