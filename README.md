@@ -62,3 +62,24 @@ El modelo de datos, las reglas de negocio y las consultas se explican en detalle
 - [Pedidos con pago aprobado](docs/etapa-04/pedidos-con-pago-aprobado.md)
 - [Pedidos sin pago aprobado](docs/etapa-04/pedidos-sin-pago-aprobado.md)
 - [Control de carga de datos](docs/etapa-04/control-carga-datos.md)
+
+<br>
+
+## Cómo instalar
+
+**Requisitos**
+
+- SQL Server 2012 o superior
+- SSMS
+
+**Pasos**
+
+1. Conectarse a SQL Server desde SSMS con un usuario que pueda crear bases de datos.
+
+2. Abrir [`sql/ddl/sistema-venta-libros.sql`](sql/ddl/sistema-venta-libros.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea la base `sistema-venta-libros` y sus tablas.
+
+3. Abrir [`sql/dml/datos_prueba.sql`](sql/dml/datos_prueba.sql) y ejecutarlo completo con <kbd>F5</kbd>. Carga los datos de prueba.
+
+> [!NOTE]
+> - El orden importa: el paso 3 necesita la base creada en el paso 2.
+> - Si la base ya existe, el paso 2 se detiene sin modificarla. Para reinstalar desde cero, hay que eliminarla antes.
