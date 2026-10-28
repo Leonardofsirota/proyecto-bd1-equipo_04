@@ -1,61 +1,73 @@
-# Reglas de negocio - Etapa I
+# Reglas de negocio - Etapa 1
 
-Este documento define las reglas de negocio que el sistema debe respetar, agrupadas por área.
+Este documento define las reglas que el sistema debe respetar, agrupadas por área. Cada regla tiene un identificador para poder referenciarla en las etapas siguientes.
+
+Se usa _pedido_ para referirse a la compra que realiza un cliente.
 
 ## 1. Usuarios y clientes
 
-### RN1. Roles de usuario
-
-Cada usuario debe tener exactamente un rol dentro del sistema. Un mismo rol puede estar asociado a múltiples usuarios.
-
-### RN2. Registro obligatorio del cliente
-
-Una compra solo puede ser realizada por un usuario registrado con el rol Cliente.
-
-### RN3. Direcciones del usuario
-
-Un usuario puede registrar una o varias direcciones asociadas a su cuenta. Estas direcciones podrán utilizarse posteriormente como destino de una compra, en el marco de la gestión de envíos.
+| ID   | Regla                    | Descripción                                                                                                                            |
+| ---- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| RN01 | Rol único                | Cada usuario tiene exactamente un rol: administrador, vendedor o cliente.                                                              |
+| RN02 | Gestión de roles         | Solo el administrador puede modificar el rol de un usuario.                                                                            |
+| RN03 | Datos de registro        | Todo usuario registra nombre, apellido, DNI, email, teléfono, fecha de nacimiento y contraseña. El DNI y el email no pueden repetirse. |
+| RN04 | Pedidos solo de clientes | Solo un usuario con rol cliente puede realizar pedidos.                                                                                |
+| RN05 | Direcciones              | Un usuario puede registrar una o varias direcciones, cada una ubicada en una ciudad de una provincia.                                  |
 
 ## 2. Catálogo de libros
 
-### RN4. Autores de los libros
+| ID   | Regla                      | Descripción                                                                                                                                                                               |
+| ---- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RN06 | ISBN único                 | Cada edición se registra una sola vez en el catálogo, identificada por su ISBN.                                                                                                           |
+| RN07 | Clasificación              | Cada libro tiene una sola editorial, categoría, idioma y encuadernación.                                                                                                                  |
+| RN08 | Autoría                    | Todo libro tiene al menos un autor y puede tener varios. Un autor puede figurar en varios libros.                                                                                         |
+| RN09 | Mantenimiento del catálogo | El administrador mantiene el catálogo y las listas de referencia (categorías, idiomas, editoriales y ubicaciones). Un vendedor puede dar de alta un libro que aún no esté en el catálogo. |
 
-Todo libro debe estar asociado a, al menos, un autor y puede tener varios autores. A su vez, un mismo autor puede participar en uno o varios libros.
+## 3. Publicaciones y stock
 
-## 3. Stock
+| ID   | Regla                    | Descripción                                                                                                                                                                                      |
+| ---- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| RN10 | Publicación por vendedor | Solo un vendedor puede publicar ofertas. Cada publicación indica el libro, la condición del ejemplar, un precio mayor que cero y el stock disponible.                                            |
+| RN11 | Ofertas múltiples        | Un mismo libro puede tener publicaciones de varios vendedores, con distintos precios y condiciones. Un vendedor no puede tener dos publicaciones vigentes del mismo libro en la misma condición. |
+| RN12 | Disponibilidad           | Solo pueden agregarse a un pedido publicaciones activas (no pausadas ni dadas de baja) y con stock.                                                                                              |
+| RN13 | Stock suficiente         | La cantidad pedida no puede superar el stock disponible de la publicación. El stock nunca queda negativo.                                                                                        |
+| RN14 | Descuento de stock       | Al confirmarse un pedido, se descuenta del stock de cada publicación la cantidad vendida.                                                                                                        |
 
-### RN5. Disponibilidad de stock
+## 4. Pedidos
 
-El sistema no debe permitir confirmar la compra de una cantidad de ejemplares superior al stock disponible de un libro.
-
-### RN6. Actualización del stock
-
-Cuando se confirme una venta, el stock de cada libro vendido debe disminuir según la cantidad adquirida.
-
-## 4. Compras
-
-### RN7. Conservación del precio histórico
-
-El detalle de cada compra debe almacenar el precio unitario aplicado al momento de realizar la operación, independientemente del precio que el libro tenga posteriormente. La modificación del precio de un libro no debe alterar las ventas registradas previamente.
-
-### RN8. Composición de la compra
-
-Una compra debe contener al menos un libro y puede incluir varios, indicando para cada uno la cantidad adquirida y su precio unitario al momento de la operación.
-
-### RN9. Total de la compra
-
-El importe total de una compra debe obtenerse como la suma de (cantidad × precio unitario) de todos sus detalles, y no debe ser ingresado arbitrariamente por el usuario.
+| ID   | Regla                | Descripción                                                                                                                      |
+| ---- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| RN15 | Composición          | Un pedido pertenece a un único cliente y tiene al menos un renglón, con una cantidad mayor que cero.                             |
+| RN16 | Varios vendedores    | Un pedido puede incluir publicaciones de uno o varios vendedores. Cada publicación aparece una sola vez por pedido.              |
+| RN17 | Total calculado      | El total es la suma de cantidad por precio unitario de los renglones. Se calcula a partir del detalle. |
+| RN18 | Dirección de entrega | El cliente elige una de sus direcciones registradas como destino del pedido.                                                     |
+| RN19 | Ciclo del pedido     | El pedido se crea pendiente, pasa a confirmado cuando se aprueba uno de sus pagos y luego a entregado.                           |
+| RN20 | Cancelación          | Solo un pedido pendiente puede cancelarse, ya que el sistema no gestiona devoluciones de dinero.                                 |
 
 ## 5. Pagos
 
-### RN10. Métodos de pago
+| ID   | Regla             | Descripción                                                                                                                                 |
+| ---- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| RN21 | Métodos admitidos | Los métodos de pago son tarjeta de débito, tarjeta de crédito y transferencia.                                                              |
+| RN22 | Pago completo     | Cada pago se realiza en línea, corresponde a un solo pedido y cubre su total con un único método. No se admiten cuotas ni pagos combinados. |
+| RN23 | Estados del pago  | Un pago puede estar pendiente, aprobado, rechazado o cancelado.                                                                             |
+| RN24 | Reintentos        | Solo se registra un nuevo intento si el anterior fue rechazado o cancelado. Un pedido tiene a lo sumo un pago aprobado.                     |
+| RN25 | Fechas del pago   | Cada pago registra su fecha de inicio. La fecha de acreditación se registra al aprobarse y no puede ser anterior a la de inicio.            |
 
-Cada compra debe utilizar un único método de pago, que debe corresponder a alguno de los medios admitidos por el sistema: tarjeta de débito, tarjeta de crédito o transferencia.
+## 6. Conservación del historial
 
-### RN11. Registro del pago
+| ID   | Regla               | Descripción                                                                                                                                            |
+| ---- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| RN26 | Precio histórico    | Cada renglón guarda el precio unitario vigente al momento de la compra. Si el vendedor cambia el precio después, los pedidos anteriores no se alteran. |
+| RN27 | Dirección histórica | El pedido guarda una copia de la dirección de entrega, que se mantiene aunque el cliente la edite o la elimine.                                        |
+| RN28 | Bajas lógicas       | Los usuarios y las publicaciones dados de baja dejan de estar activos, pero no se eliminan, para que los pedidos que los incluyen sigan completos.     |
+| RN29 | Historial de pagos  | Los intentos rechazados o cancelados se conservan como parte del historial del pedido.                                                                 |
 
-Todo pago debe estar asociado a una compra. Cada pago debe almacenar el importe, la fecha de pago, el método utilizado y su estado.
+## 7. Requisitos mínimos cubiertos
 
-### RN12. Múltiples intentos de pago
-
-Una compra puede tener uno o varios pagos asociados, lo que permite registrar nuevos intentos cuando uno anterior es rechazado o cancelado. Un pago rechazado o cancelado debe conservarse como parte del historial de la compra y no debe considerarse para completar la operación.
+| Requisito                      | Reglas      |
+| ------------------------------ | ----------- |
+| Gestión de stock               | RN12 a RN14 |
+| Registro de clientes           | RN03 a RN05 |
+| Historial de precios unitarios | RN26        |
+| Métodos de pago                | RN21 y RN22 |
