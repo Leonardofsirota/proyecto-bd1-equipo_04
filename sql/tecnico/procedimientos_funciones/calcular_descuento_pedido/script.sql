@@ -1,3 +1,6 @@
+﻿-- Devuelve el porcentaje de descuento de un cliente según su total histórico
+-- de compras: la suma de todos sus pedidos con un pago aprobado.
+-- Tramos: hasta 100.000, 0 %; hasta 200.000, 5 %; más de 200.000, 10 %.
 CREATE OR ALTER FUNCTION dbo.fn_PorcentajeDescuentoCliente
 (
     @UsuarioId INT
@@ -17,7 +20,15 @@ BEGIN
     FROM dbo.PEDIDO AS P
     INNER JOIN dbo.PEDIDO_DETALLE AS PD
         ON PD.pedido_id = P.pedido_id
-    WHERE P.usuario_id = @UsuarioId;
+    WHERE P.usuario_id = @UsuarioId
+        AND EXISTS (
+            SELECT 1
+            FROM dbo.PAGO AS PA
+            INNER JOIN dbo.PAGO_ESTADO AS PS
+                ON PS.pago_estado_id = PA.pago_estado_id
+            WHERE PA.pedido_id = P.pedido_id
+                AND PS.nombre = 'Aprobado'
+        );
 
     SET @Descuento =
         CASE
@@ -30,16 +41,18 @@ BEGIN
 END;
 GO
 
-SELECT
-    U.usuario_id,
-    U.nombre,
-    U.apellido,
-    dbo.fn_PorcentajeDescuentoCliente(
-        U.usuario_id
-    ) AS PorcentajeDescuento
-FROM dbo.USUARIO AS U;
-GO
+--SELECT
+--    U.usuario_id,
+--    U.nombre,
+--    U.apellido,
+--    dbo.fn_PorcentajeDescuentoCliente(
+--        U.usuario_id
+--    ) AS PorcentajeDescuento
+--FROM dbo.USUARIO AS U;
+--GO
 
+-- Devuelve el total de un pedido: la suma de cantidad por precio unitario de
+-- cada renglón. Si el pedido no existe o no tiene renglones, devuelve 0.
 CREATE OR ALTER FUNCTION dbo.fn_TotalPedido
 (
     @PedidoId INT
@@ -61,14 +74,17 @@ BEGIN
 END;
 GO
 
-SELECT
-    P.pedido_id,
-    P.fecha_pedido,
-    dbo.fn_TotalPedido(P.pedido_id) AS TotalPedido
-FROM dbo.PEDIDO AS P
-ORDER BY P.pedido_id;
-GO
+--SELECT
+--    P.pedido_id,
+--    P.fecha_pedido,
+--    dbo.fn_TotalPedido(P.pedido_id) AS TotalPedido
+--FROM dbo.PEDIDO AS P
+--ORDER BY P.pedido_id;
+--GO
 
+-- Calcula el importe que se descuenta al aplicar un porcentaje sobre un total,
+-- redondeado a dos decimales. Devuelve NULL si falta algún dato o si es
+-- inválido: un valor negativo o un porcentaje mayor que 100.
 CREATE OR ALTER FUNCTION dbo.fn_ImporteDescuento
 (
     @TotalCompra DECIMAL(18, 2),
@@ -96,15 +112,59 @@ BEGIN
 END;
 GO
 
+-- Cliente en el tramo del 0 %: total del pedido 37.100, descuento 0.
 SELECT
-    dbo.fn_PorcentajeDescuentoCliente(1)
+    P.pedido_id,
+    P.usuario_id,
+
+    dbo.fn_PorcentajeDescuentoCliente(P.usuario_id)
         AS PorcentajeDescuento,
 
-    dbo.fn_TotalPedido(1)
+    dbo.fn_TotalPedido(P.pedido_id)
         AS TotalPedido,
 
     dbo.fn_ImporteDescuento(
-        dbo.fn_TotalPedido(1),
-        dbo.fn_PorcentajeDescuentoCliente(1)
-    ) AS ImporteDescuento;
+        dbo.fn_TotalPedido(P.pedido_id),
+        dbo.fn_PorcentajeDescuentoCliente(P.usuario_id)
+    ) AS ImporteDescuento
+FROM dbo.PEDIDO AS P
+WHERE P.pedido_id = 2;
+GO
+
+-- Cliente en el tramo del 5 %: total del pedido 35.000, descuento 1.750.
+SELECT
+    P.pedido_id,
+    P.usuario_id,
+
+    dbo.fn_PorcentajeDescuentoCliente(P.usuario_id)
+        AS PorcentajeDescuento,
+
+    dbo.fn_TotalPedido(P.pedido_id)
+        AS TotalPedido,
+
+    dbo.fn_ImporteDescuento(
+        dbo.fn_TotalPedido(P.pedido_id),
+        dbo.fn_PorcentajeDescuentoCliente(P.usuario_id)
+    ) AS ImporteDescuento
+FROM dbo.PEDIDO AS P
+WHERE P.pedido_id = 1;
+GO
+
+-- Cliente en el tramo del 10 %: total del pedido 38.400, descuento 3.840.
+SELECT
+    P.pedido_id,
+    P.usuario_id,
+
+    dbo.fn_PorcentajeDescuentoCliente(P.usuario_id)
+        AS PorcentajeDescuento,
+
+    dbo.fn_TotalPedido(P.pedido_id)
+        AS TotalPedido,
+
+    dbo.fn_ImporteDescuento(
+        dbo.fn_TotalPedido(P.pedido_id),
+        dbo.fn_PorcentajeDescuentoCliente(P.usuario_id)
+    ) AS ImporteDescuento
+FROM dbo.PEDIDO AS P
+WHERE P.pedido_id = 3;
 GO
