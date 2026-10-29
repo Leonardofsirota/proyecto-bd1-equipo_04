@@ -7,7 +7,7 @@
    los renglones del vendedor indicado, y el total suma solo esos renglones. Si
    el vendedor no tiene pedidos para entregar, la consulta no devuelve filas. */
 
-DECLARE @vendedor_id INT = 22;
+DECLARE @vendedor_id INT = 25;
 
 SELECT
     -- Datos del pedido, iguales en todos sus renglones

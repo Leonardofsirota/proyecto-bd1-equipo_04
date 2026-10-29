@@ -8,7 +8,7 @@
 -- español se lee como 'AAAA-DD-MM'); DATEFORMAT ymd fija su interpretación.
 SET DATEFORMAT ymd;
 
-DECLARE @vendedor_id INT = 22;
+DECLARE @vendedor_id INT = 25;
 DECLARE @fecha_desde DATETIME = '2026-01-01';
 DECLARE @fecha_hasta DATETIME = '2026-12-31';
 
