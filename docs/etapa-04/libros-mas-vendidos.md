@@ -1,6 +1,6 @@
 # Libros más vendidos - Etapa 4
 
-Este documento explica la consulta [`ventas/libros-mas-vendidos.sql`](../../sql/consultas/ventas/libros-mas-vendidos.sql), que resuelve el caso de uso [Consultar libros más vendidos](casos-uso.md#2-requisitos-cubiertos).
+Este documento explica la consulta [`vendedor-administrador/libros-mas-vendidos.sql`](../../sql/consultas/vendedor-administrador/libros-mas-vendidos.sql), que resuelve el caso de uso [Consultar libros más vendidos](casos-uso.md#2-requisitos-cubiertos).
 
 ## 1. Qué hace
 

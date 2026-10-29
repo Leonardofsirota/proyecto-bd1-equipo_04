@@ -1,6 +1,6 @@
 # Comprobante de venta - Etapa 4
 
-Este documento explica la consulta [`comprobantes/factura-comprobante.sql`](../../sql/consultas/comprobantes/factura-comprobante.sql), que resuelve el caso de uso [Consultar comprobante de venta](casos-uso.md#2-requisitos-cubiertos).
+Este documento explica la consulta [`cliente/factura-comprobante.sql`](../../sql/consultas/cliente/factura-comprobante.sql), que resuelve el caso de uso [Consultar comprobante de venta](casos-uso.md#2-requisitos-cubiertos).
 
 ## 1. Qué hace
 

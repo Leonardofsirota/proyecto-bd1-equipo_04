@@ -16,15 +16,15 @@ La consigna pide tres consultas mínimas:
 - **Reporte agregado:** total de ventas por vendedor o por categoría en un rango de fechas, con `GROUP BY`, `SUM` y `COUNT`.
 - **Consulta avanzada:** al menos tres tablas unidas con `JOIN` y filtros con `HAVING` o subconsultas.
 
-| Caso de uso                                                              | Requisito           | Script                                                                                                 |
-| ------------------------------------------------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------ |
-| [Consultar ofertas vigentes por libro](ofertas-vigentes-por-libro.md)    | —                   | [catalogo/ofertas-vigentes-por-libro.sql](../../sql/consultas/catalogo/ofertas-vigentes-por-libro.sql) |
-| [Consultar comprobante de venta](factura-comprobante.md)                 | Factura/comprobante | [comprobantes/factura-comprobante.sql](../../sql/consultas/comprobantes/factura-comprobante.sql)       |
-| [Consultar total de ventas por vendedor](total-ventas-por-vendedor.md)   | Reporte agregado    | [ventas/total-ventas-por-vendedor.sql](../../sql/consultas/ventas/total-ventas-por-vendedor.sql)       |
-| [Consultar total de ventas por categoría](total-ventas-por-categoria.md) | Reporte agregado    | [ventas/total-ventas-por-categoria.sql](../../sql/consultas/ventas/total-ventas-por-categoria.sql)     |
-| [Consultar libros más vendidos](libros-mas-vendidos.md)                  | Consulta avanzada   | [ventas/libros-mas-vendidos.sql](../../sql/consultas/ventas/libros-mas-vendidos.sql)                   |
-| [Consultar pedidos con pago aprobado](pedidos-con-pago-aprobado.md)      | —                   | [pagos/pedidos-con-pago-aprobado.sql](../../sql/consultas/pagos/pedidos-con-pago-aprobado.sql)         |
-| [Consultar pedidos sin pago aprobado](pedidos-sin-pago-aprobado.md)      | Consulta avanzada   | [pagos/pedidos-sin-pago-aprobado.sql](../../sql/consultas/pagos/pedidos-sin-pago-aprobado.sql)         |
+| Caso de uso                                                              | Requisito           | Script                                                                                                                             |
+| ------------------------------------------------------------------------ | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| [Consultar ofertas vigentes por libro](ofertas-vigentes-por-libro.md)    | —                   | [cliente/ofertas-vigentes-por-libro.sql](../../sql/consultas/cliente/ofertas-vigentes-por-libro.sql)                               |
+| [Consultar comprobante de venta](factura-comprobante.md)                 | Factura/comprobante | [cliente/factura-comprobante.sql](../../sql/consultas/cliente/factura-comprobante.sql)                                             |
+| [Consultar total de ventas por vendedor](total-ventas-por-vendedor.md)   | Reporte agregado    | [administrador/total-ventas-por-vendedor.sql](../../sql/consultas/administrador/total-ventas-por-vendedor.sql)                     |
+| [Consultar total de ventas por categoría](total-ventas-por-categoria.md) | Reporte agregado    | [vendedor-administrador/total-ventas-por-categoria.sql](../../sql/consultas/vendedor-administrador/total-ventas-por-categoria.sql) |
+| [Consultar libros más vendidos](libros-mas-vendidos.md)                  | Consulta avanzada   | [vendedor-administrador/libros-mas-vendidos.sql](../../sql/consultas/vendedor-administrador/libros-mas-vendidos.sql)               |
+| [Consultar pedidos con pago aprobado](pedidos-con-pago-aprobado.md)      | —                   | [administrador/pedidos-con-pago-aprobado.sql](../../sql/consultas/administrador/pedidos-con-pago-aprobado.sql)                     |
+| [Consultar pedidos sin pago aprobado](pedidos-sin-pago-aprobado.md)      | Consulta avanzada   | [administrador/pedidos-sin-pago-aprobado.sql](../../sql/consultas/administrador/pedidos-sin-pago-aprobado.sql)                     |
 
 Las dos consultas sin requisito responden a necesidades del dominio: comparar las ofertas de un libro antes de comprarlo y ver qué pedidos ya se cobraron.
 
@@ -32,7 +32,7 @@ Las dos consultas sin requisito responden a necesidades del dominio: comparar la
 
 ## 3. Qué se considera una venta
 
-Una venta es un pedido con un pago aprobado. Este criterio lo aplican el comprobante y las consultas de `ventas/`; las de `pagos/` separan los pedidos que lo cumplen de los que no.
+Una venta es un pedido con un pago aprobado. Este criterio lo aplican el comprobante y los reportes de ventas (total por vendedor, total por categoría y libros más vendidos); las consultas de pedidos con y sin pago aprobado separan los pedidos que lo cumplen de los que no.
 
 - **La fecha de una venta es la de aprobación del pago** (`PAGO.fecha_pago`), no la de creación del pedido, que puede quedar pendiente varios días antes de pagarse. El comprobante la muestra como fecha de venta, y los reportes por rango de fechas cuentan cada venta en el período en que se aprobó su pago. Según RN25, esa fecha se registra al aprobarse el pago; los datos de prueba lo cumplen y el motor lo controlará a partir de la Etapa 5.
 - **No se filtra por el estado del pedido.** Según RN19, el pedido se confirma cuando se aprueba su pago, así que el pago aprobado basta. Los [datos de prueba](../etapa-03/pruebas-validacion.md#4-datos-de-prueba) respetan esa regla; el motor la controlará a partir de la Etapa 5.

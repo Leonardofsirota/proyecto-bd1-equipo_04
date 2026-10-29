@@ -1,6 +1,6 @@
 # Pedidos con pago aprobado - Etapa 4
 
-Este documento explica la consulta [`pagos/pedidos-con-pago-aprobado.sql`](../../sql/consultas/pagos/pedidos-con-pago-aprobado.sql), que resuelve el caso de uso [Consultar pedidos con pago aprobado](casos-uso.md#2-requisitos-cubiertos).
+Este documento explica la consulta [`administrador/pedidos-con-pago-aprobado.sql`](../../sql/consultas/administrador/pedidos-con-pago-aprobado.sql), que resuelve el caso de uso [Consultar pedidos con pago aprobado](casos-uso.md#2-requisitos-cubiertos).
 
 ## 1. Qué hace
 

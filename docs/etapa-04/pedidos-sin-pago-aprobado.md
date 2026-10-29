@@ -1,6 +1,6 @@
 # Pedidos sin pago aprobado - Etapa 4
 
-Este documento explica la consulta [`pagos/pedidos-sin-pago-aprobado.sql`](../../sql/consultas/pagos/pedidos-sin-pago-aprobado.sql), que resuelve el caso de uso [Consultar pedidos sin pago aprobado](casos-uso.md#2-requisitos-cubiertos).
+Este documento explica la consulta [`administrador/pedidos-sin-pago-aprobado.sql`](../../sql/consultas/administrador/pedidos-sin-pago-aprobado.sql), que resuelve el caso de uso [Consultar pedidos sin pago aprobado](casos-uso.md#2-requisitos-cubiertos).
 
 ## 1. Qué hace
 

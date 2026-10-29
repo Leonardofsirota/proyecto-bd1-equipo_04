@@ -1,6 +1,6 @@
 # Ofertas vigentes por libro - Etapa 4
 
-Este documento explica la consulta [`catalogo/ofertas-vigentes-por-libro.sql`](../../sql/consultas/catalogo/ofertas-vigentes-por-libro.sql), que resuelve el caso de uso [Consultar ofertas vigentes por libro](casos-uso.md#2-requisitos-cubiertos).
+Este documento explica la consulta [`cliente/ofertas-vigentes-por-libro.sql`](../../sql/consultas/cliente/ofertas-vigentes-por-libro.sql), que resuelve el caso de uso [Consultar ofertas vigentes por libro](casos-uso.md#2-requisitos-cubiertos).
 
 ## 1. Qué hace
 

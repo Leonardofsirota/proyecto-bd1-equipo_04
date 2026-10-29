@@ -1,6 +1,6 @@
 # Total de ventas por categoría - Etapa 4
 
-Este documento explica la consulta [`ventas/total-ventas-por-categoria.sql`](../../sql/consultas/ventas/total-ventas-por-categoria.sql), que resuelve el caso de uso [Consultar total de ventas por categoría](casos-uso.md#2-requisitos-cubiertos).
+Este documento explica la consulta [`vendedor-administrador/total-ventas-por-categoria.sql`](../../sql/consultas/vendedor-administrador/total-ventas-por-categoria.sql), que resuelve el caso de uso [Consultar total de ventas por categoría](casos-uso.md#2-requisitos-cubiertos).
 
 ## 1. Qué hace
 

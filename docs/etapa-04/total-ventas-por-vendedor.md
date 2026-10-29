@@ -1,6 +1,6 @@
 # Total de ventas por vendedor - Etapa 4
 
-Este documento explica la consulta [`ventas/total-ventas-por-vendedor.sql`](../../sql/consultas/ventas/total-ventas-por-vendedor.sql), que resuelve el caso de uso [Consultar total de ventas por vendedor](casos-uso.md#2-requisitos-cubiertos).
+Este documento explica la consulta [`administrador/total-ventas-por-vendedor.sql`](../../sql/consultas/administrador/total-ventas-por-vendedor.sql), que resuelve el caso de uso [Consultar total de ventas por vendedor](casos-uso.md#2-requisitos-cubiertos).
 
 ## 1. Qué hace
 
