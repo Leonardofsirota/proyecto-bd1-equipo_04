@@ -63,7 +63,13 @@ Se usa _pedido_ para referirse a la compra que realiza un cliente.
 | RN28 | Bajas lógicas       | Los usuarios y las publicaciones dados de baja dejan de estar activos, pero no se eliminan, para que los pedidos que los incluyen sigan completos.     |
 | RN29 | Historial de pagos  | Los intentos rechazados o cancelados se conservan como parte del historial del pedido.                                                                 |
 
-## 7. Requisitos mínimos cubiertos
+## 7. Descuentos
+
+| ID   | Regla                 | Descripción                                                                                                                                                                                                                                                     |
+| ---- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RN30 | Descuento por volumen | Cada pedido tiene un porcentaje de descuento según su total: 0 % hasta 100.000, 5 % hasta 200.000 y 10 % por encima de ese monto. Un pedido cancelado no tiene descuento. |
+
+## 8. Requisitos mínimos cubiertos
 
 | Requisito                      | Reglas      |
 | ------------------------------ | ----------- |
