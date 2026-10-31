@@ -100,6 +100,8 @@ GO
 -- Devuelve el stock real de una publicación menos las reservas vigentes de otros
 -- pedidos. @PedidoExcluido es el pedido que ya es dueño de su reserva; con NULL
 -- no se excluye ninguno. Devuelve NULL si la publicación no existe.
+-- También la usan ofertas-vigentes-por-libro.sql y buscar-libros-catalogo.sql
+-- (sql/consultas/cliente).
 CREATE FUNCTION dbo.fn_StockLibre
 (
     @PublicacionId INT,

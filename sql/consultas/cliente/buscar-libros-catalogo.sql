@@ -7,7 +7,10 @@
    También se listan los libros sin ofertas vigentes, al final: el cliente ve
    que no están disponibles y el vendedor comprueba si el libro ya está en el
    catálogo antes de darlo de alta (RN06 y RN09). Si ningún libro coincide con
-   el texto, la consulta no devuelve filas. */
+   el texto, la consulta no devuelve filas.
+
+   Requiere dbo.fn_StockLibre: ejecutar antes
+   sql/tecnico/procedimientos_funciones/registrar_venta/script.sql. */
 
 -- Requerido por el método .value() de XML que arma la lista de autores.
 -- SSMS lo activa por defecto; sqlcmd no.
@@ -62,7 +65,7 @@ LEFT JOIN (
         ON PUB.usuario_id = U.usuario_id
     WHERE PUB.disponible = 1 -- no pausada
         AND PUB.fecha_eliminacion IS NULL -- no dada de baja
-        AND PUB.stock > 0 -- no agotada
+        AND dbo.fn_StockLibre(PUB.publicacion_id, NULL) > 0 -- ni agotada ni reservada
         AND U.fecha_eliminacion IS NULL -- vendedor no dado de baja
     GROUP BY PUB.libro_id
 ) AS OV

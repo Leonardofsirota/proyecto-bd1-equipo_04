@@ -18,7 +18,7 @@ También lista los libros sin ofertas vigentes, al final. Si ningún libro coinc
 - **Texto buscado:** se indica con la variable `@texto`. `LIKE` con comodines a ambos lados lo busca en cualquier parte del título, del ISBN o del nombre completo de un autor.
 - **Mayúsculas y tildes:** el título y el autor se comparan con la intercalación `Latin1_General_CI_AI`, que no las distingue: «cortazar» encuentra «Cortázar».
 - **Autores:** un `EXISTS` busca el texto entre los autores del libro. Otra subconsulta los reúne en una sola columna con `FOR XML PATH` y `STUFF`, porque SQL Server 2012 no tiene `STRING_AGG`.
-- **Ofertas vigentes:** una subconsulta agrupa por libro las publicaciones que un cliente puede agregar a un pedido (RN12), con el mismo criterio que [Ofertas vigentes por libro](ofertas-vigentes-por-libro.md). Se une con `LEFT JOIN` para conservar los libros sin ofertas, que muestran cero y ningún precio.
+- **Ofertas vigentes:** una subconsulta agrupa por libro las publicaciones que un cliente puede agregar a un pedido (RN12), con el mismo criterio que [Ofertas vigentes por libro](ofertas-vigentes-por-libro.md): una publicación con todas sus unidades reservadas no cuenta como oferta (RN13, RN33). Por eso usa `dbo.fn_StockLibre`, y [`registrar_venta/script.sql`](../../sql/tecnico/procedimientos_funciones/registrar_venta/script.sql), de la Etapa 5, debe ejecutarse antes que esta consulta. Se une con `LEFT JOIN` para conservar los libros sin ofertas, que muestran cero y ningún precio.
 - **Orden:** primero, los libros que se pueden comprar; después, por título y, a igual título, por número de libro.
 
 ## 4. Resultado esperado

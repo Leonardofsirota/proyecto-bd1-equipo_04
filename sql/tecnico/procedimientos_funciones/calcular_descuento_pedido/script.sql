@@ -48,7 +48,7 @@ GO
 
 -- Devuelve el porcentaje de descuento de un pedido según su total (RN30). Es
 -- informativo: no modifica el total del pedido ni el importe de sus pagos.
--- Si el pedido no existe o está cancelado, devuelve NULL.
+-- Si el pedido no existe o está cancelado, devuelve 0.
 -- Tramos: hasta 100.000, 0 %; hasta 200.000, 5 %; más de 200.000, 10 %.
 CREATE FUNCTION dbo.fn_PorcentajeDescuentoPedido
 (
@@ -180,7 +180,7 @@ FROM dbo.PEDIDO AS P
 WHERE P.pedido_id = 18;
 GO
 
--- Pedido cancelado de más de 100.000: porcentaje y descuento NULL.
+-- Pedido cancelado de más de 100.000: porcentaje y descuento 0.
 SELECT
     P.pedido_id,
     PE.nombre AS Estado,
@@ -201,6 +201,6 @@ INNER JOIN dbo.PEDIDO_ESTADO AS PE
 WHERE P.pedido_id = 62;
 GO
 
--- Pedido inexistente: porcentaje NULL.
+-- Pedido inexistente: porcentaje 0.
 SELECT dbo.fn_PorcentajeDescuentoPedido(0) AS PorcentajeDescuento;
 GO

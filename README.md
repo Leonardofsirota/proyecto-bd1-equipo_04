@@ -56,11 +56,20 @@ El modelo de datos, las reglas de negocio y las consultas se explican en detalle
 - [Casos de uso](docs/etapa-04/casos-uso.md)
 - [Ofertas vigentes por libro](docs/etapa-04/ofertas-vigentes-por-libro.md)
 - [Comprobante de venta](docs/etapa-04/factura-comprobante.md)
-- [Total de ventas por vendedor](docs/etapa-04/total-ventas-por-vendedor.md)
+- [Pedidos del cliente](docs/etapa-04/pedidos-del-cliente.md)
+- [Direcciones del cliente](docs/etapa-04/direcciones-del-cliente.md)
+- [Búsqueda en el catálogo](docs/etapa-04/buscar-libros-catalogo.md)
+- [Publicaciones del vendedor](docs/etapa-04/publicaciones-del-vendedor.md)
+- [Pedidos a entregar](docs/etapa-04/pedidos-a-entregar.md)
+- [Ventas por publicación](docs/etapa-04/ventas-por-publicacion.md)
 - [Total de ventas por categoría](docs/etapa-04/total-ventas-por-categoria.md)
+- [Ventas por mes](docs/etapa-04/ventas-por-mes.md)
 - [Libros más vendidos](docs/etapa-04/libros-mas-vendidos.md)
+- [Total de ventas por vendedor](docs/etapa-04/total-ventas-por-vendedor.md)
 - [Pedidos con pago aprobado](docs/etapa-04/pedidos-con-pago-aprobado.md)
 - [Pedidos sin pago aprobado](docs/etapa-04/pedidos-sin-pago-aprobado.md)
+- [Pagos por método](docs/etapa-04/pagos-por-metodo.md)
+- [Usuarios por rol](docs/etapa-04/usuarios-por-rol.md)
 - [Control de carga de datos](docs/etapa-04/control-carga-datos.md)
 
 <br>
@@ -80,6 +89,8 @@ El modelo de datos, las reglas de negocio y las consultas se explican en detalle
 
 3. Abrir [`sql/dml/datos_prueba.sql`](sql/dml/datos_prueba.sql) y ejecutarlo completo con <kbd>F5</kbd>. Carga los datos de prueba.
 
+4. Abrir [`calcular_descuento_pedido/script.sql`](sql/tecnico/procedimientos_funciones/calcular_descuento_pedido/script.sql) y ejecutarlo completo con <kbd>F5</kbd>. Después, hacer lo mismo con [`registrar_venta/script.sql`](sql/tecnico/procedimientos_funciones/registrar_venta/script.sql). Crean las funciones y los procedimientos de la Etapa 5, entre ellos `fn_StockLibre`, que necesitan las consultas de ofertas y de catálogo.
+
 > [!NOTE]
-> - El orden importa: el paso 3 necesita la base creada en el paso 2.
+> - El orden importa: cada paso necesita lo que crea el anterior.
 > - Si la base ya existe, el paso 2 se detiene sin modificarla. Para reinstalar desde cero, hay que eliminarla antes.
