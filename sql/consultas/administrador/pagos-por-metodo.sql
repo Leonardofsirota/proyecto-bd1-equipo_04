@@ -4,10 +4,10 @@
    concentre los rechazos (RN21, RN23 y RN29).
 
    El rango se aplica a la fecha de inicio del intento, porque los rechazados y
-   cancelados no tienen fecha de acreditación (RN25). Por eso el importe
-   aprobado puede diferir del total de los reportes de ventas, que usan la
-   fecha de aprobación: un pago iniciado al final del rango puede aprobarse en
-   el período siguiente. */
+   cancelados sin cobro no tienen fecha de acreditación (RN25). Por eso el
+   importe aprobado puede diferir del total de los reportes de ventas, que usan
+   la fecha de aprobación: un pago iniciado al final del rango puede aprobarse
+   en el período siguiente. */
 
 -- Con DATETIME, el formato 'AAAA-MM-DD' depende del idioma de la sesión (en
 -- español se lee como 'AAAA-DD-MM'); DATEFORMAT ymd fija su interpretación.

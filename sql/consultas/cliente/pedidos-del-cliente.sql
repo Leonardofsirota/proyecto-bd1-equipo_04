@@ -16,7 +16,7 @@ SELECT
     SUM(PD.cantidad * PD.precio_unitario) AS total_pedido, -- calculado del detalle (RN17)
     COALESCE(UP.estado_pago, 'Sin pago') AS estado_pago,
     UP.metodo_pago,
-    UP.fecha_pago -- solo si el último intento se aprobó (RN25)
+    UP.fecha_pago -- solo si el último intento acreditó un cobro (RN25)
 FROM dbo.PEDIDO AS P
 INNER JOIN dbo.PEDIDO_ESTADO AS PE
     ON P.pedido_estado_id = PE.pedido_estado_id
