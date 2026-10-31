@@ -22,7 +22,7 @@ La transformación siguió estas reglas:
 - **Entidades.** Cada entidad se convirtió en una tabla con el mismo nombre, y sus atributos, en columnas. Los atributos opcionales dieron lugar a columnas que admiten valores vacíos.
 - **Relaciones de uno a muchos.** Se representan con una clave foránea en la tabla del lado «muchos». Todas son obligatorias, salvo la nacionalidad del autor.
 - **Relaciones de muchos a muchos.** Se transformaron en tablas intermedias. La relación entre autores y libros dio lugar a AUTOR_LIBRO. La relación entre pedidos y publicaciones dio lugar a PEDIDO_DETALLE, que además incorpora sus atributos propios: la cantidad y el precio unitario.
-- **Atributo derivado.** El total del pedido se calcula a partir del detalle, por lo que no se almacena.
+- **Atributos derivados.** El total del pedido se calcula a partir del detalle, y su descuento, a partir del total, por lo que no se almacenan. Tampoco se almacena el stock libre de una publicación, que se calcula a partir de su stock y de las reservas vigentes.
 
 El modelo no tiene relaciones de uno a uno.
 
@@ -82,16 +82,17 @@ Los diez catálogos tienen la misma estructura: un identificador y un nombre que
 
 Las claves y las restricciones de unicidad no alcanzan para asegurar algunas reglas de negocio, porque dependen de datos de otras filas o de otras tablas:
 
-| Reglas     | Qué debe controlarse                                                                                                                                                                                                     |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| RN04, RN10 | Que quien realiza un pedido tenga el rol de cliente, y quien publica, el de vendedor.                                                                                                                                    |
-| RN08, RN15 | Que todo libro tenga al menos un autor y todo pedido, al menos un renglón. La clave foránea asegura que cada fila intermedia pertenezca a un libro o a un pedido, pero no que cada libro o pedido tenga filas asociadas. |
-| RN12, RN13 | Que solo se agreguen a un pedido publicaciones disponibles, vigentes y con stock suficiente.                                                                                                                             |
-| RN14       | Que el stock se descuente al confirmarse el pedido.                                                                                                                                                                      |
-| RN18       | Que la dirección copiada en el pedido sea una de las direcciones registradas por el cliente.                                                                                                                             |
-| RN19, RN20 | Que el pedido avance por sus estados en el orden previsto y solo se cancele mientras está pendiente.                                                                                                                     |
-| RN22       | Que el importe de cada pago coincida con el total del pedido.                                                                                                                                                            |
-| RN24       | Que un nuevo intento de pago solo se registre si el anterior fue rechazado o cancelado, y que cada pedido tenga a lo sumo un pago aprobado.                                                                              |
-| RN25       | Que la fecha de pago se registre cuando el pago se aprueba.                                                                                                                                                              |
+| Reglas      | Qué debe controlarse                                                                                                                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| RN04, RN10  | Que quien realiza un pedido tenga el rol de cliente, y quien publica, el de vendedor.                                                                                                                                    |
+| RN08, RN15  | Que todo libro tenga al menos un autor y todo pedido, al menos un renglón. La clave foránea asegura que cada fila intermedia pertenezca a un libro o a un pedido, pero no que cada libro o pedido tenga filas asociadas. |
+| RN12, RN13  | Que solo se agreguen a un pedido publicaciones disponibles, vigentes y con stock libre suficiente.                                                                                                                       |
+| RN14        | Que el stock se descuente al confirmarse el pedido.                                                                                                                                                                      |
+| RN18        | Que la dirección copiada en el pedido sea una de las direcciones registradas por el cliente.                                                                                                                             |
+| RN19, RN20  | Que el pedido avance por sus estados en el orden previsto y solo se cancele mientras está pendiente.                                                                                                                     |
+| RN22        | Que el importe de cada pago coincida con el total del pedido.                                                                                                                                                            |
+| RN24        | Que un nuevo intento de pago solo se registre si el anterior fue rechazado o cancelado, y que cada pedido tenga a lo sumo un pago aprobado.                                                                              |
+| RN25        | Que la fecha de pago se registre cuando el pago se aprueba.                                                                                                                                                              |
+| RN33 a RN37 | Que el stock libre tenga en cuenta las reservas vigentes, y que un pago aprobado solo concrete la venta si hay stock libre para todo el pedido.                                                                          |
 
 El control de estas reglas corresponde a los mecanismos de la Etapa 5: procedimientos, transacciones y triggers.

@@ -46,6 +46,8 @@ Tres decisiones protegen el historial de las ventas:
 - **Dirección copiada.** El pedido guarda una copia de la dirección de entrega, en lugar de referenciar una dirección del cliente. Así la conserva aunque el cliente la edite o la elimine (RN27). Solo la ciudad se referencia, porque pertenece a un catálogo que el cliente no modifica.
 - **Total calculado.** El total del pedido no se almacena: se calcula a partir del detalle (RN17). De este modo no puede quedar inconsistente con los renglones.
 
+El descuento sigue el mismo criterio: su porcentaje y su importe se derivan del total, así que tampoco se almacenan. Además, es informativo y no cambia lo que se cobra (RN30 a RN32).
+
 ## 6. Pagos
 
 Cada pago es un intento de cobro de un pedido. Un pedido puede tener varios: si un intento es rechazado o cancelado, se registra uno nuevo y el anterior se conserva como historial (RN24, RN29). Cada intento usa un único método de pago y tiene un estado (RN21 a RN23).
@@ -55,7 +57,7 @@ El pago guarda su propio importe aunque el total del pedido pueda calcularse. Fu
 Además, registra dos fechas con significados distintos (RN25):
 
 - **Fecha de creación.** Indica cuándo se inició el intento y siempre está presente.
-- **Fecha de pago.** Indica cuándo se acreditó y queda vacía hasta que el pago se aprueba.
+- **Fecha de pago.** Indica cuándo se acreditó y queda vacía hasta que el pago se aprueba. Si el cobro no concreta la venta, el pago queda cancelado y conserva esta fecha como rastro (RN37). Por eso, la fecha de pago por sí sola no indica que hubo una venta: lo indica el estado aprobado.
 
 ## 7. Bajas lógicas
 
@@ -81,3 +83,9 @@ Todas las tablas tienen una clave primaria sustituta de una sola columna, con el
 Los identificadores naturales, como el ISBN del libro o el DNI y el email del usuario, se definen como únicos, pero no se usan como clave primaria.
 
 Las tablas intermedias siguen el mismo criterio: tienen su propia clave sustituta en lugar de una clave compuesta. Para evitar filas repetidas, la combinación de sus dos claves foráneas se define como única.
+
+## 10. Reservas de stock
+
+La reserva de stock (RN33 a RN35) no agrega tablas ni columnas. Su vencimiento y el stock libre se calculan al consultarlos, con datos que el modelo ya guarda: la fecha del pedido y, si tiene un pago pendiente, la fecha de creación y el método de ese pago.
+
+Al ser un cálculo, una reserva deja de contar en cuanto vence, sin que haya que actualizar ninguna fila: un pedido vencido sigue pendiente, pero ya no reserva. El stock de PUBLICACION conserva siempre las unidades reales y solo baja al confirmarse la venta (RN14).

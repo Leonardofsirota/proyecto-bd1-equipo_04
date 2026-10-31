@@ -4,12 +4,11 @@ Este documento explica la consulta [`administrador/pedidos-con-pago-aprobado.sql
 
 ## 1. Qué hace
 
-Lista los pedidos ya cobrados, uno por fila y ordenados por número. De cada uno muestra el cliente, el estado del pedido, el importe pagado y el método de pago.
+Lista las [ventas](casos-uso.md#3-qué-se-considera-una-venta), es decir, los pedidos con un pago aprobado, uno por fila y ordenados por número. De cada uno muestra el cliente, el estado del pedido, el importe pagado y el método de pago.
 
 ## 2. Quién la usa
 
-- **Vendedor:** para saber qué pedidos ya se cobraron. Los que siguen confirmados son los que todavía falta entregar.
-- **Administrador:** para controlar los cobros del marketplace y cómo se pagaron.
+El **Administrador**, para controlar los cobros del marketplace y cómo se pagaron. Como un pedido puede incluir libros de varios vendedores (RN16) y la consulta muestra datos de todos los clientes, un vendedor consulta lo que le toca entregar en [Pedidos a entregar](pedidos-a-entregar.md).
 
 ## 3. Cómo lo resuelve
 

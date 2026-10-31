@@ -10,13 +10,14 @@ Solo aparecen publicaciones activas, con stock y de vendedores que no fueron dad
 
 ## 2. Quién la usa
 
-El **Cliente**, antes de armar su pedido. Un mismo libro puede tener ofertas de varios vendedores (RN11), y la consulta le permite elegir según el precio y el estado del ejemplar.
+El **Cliente**, antes de armar su pedido. Un mismo libro puede tener ofertas de varios vendedores (RN11), y la consulta le permite elegir según el precio y el estado del ejemplar. El ID del libro se obtiene en [Buscar libros en el catálogo](buscar-libros-catalogo.md).
 
 ## 3. Cómo lo resuelve
 
 - **Libro elegido:** se indica con la variable `@libro_id`.
-- **Uniones:** parte del libro y lo une con sus publicaciones; cada publicación, con su vendedor y su condición.
+- **Uniones:** parte del libro y lo une con su encuadernación y sus publicaciones; cada publicación, con su vendedor y su condición.
 - **Filtros:** el `WHERE` descarta las ofertas pausadas, dadas de baja, agotadas o de un vendedor dado de baja.
+- **Stock:** es el stock real de la publicación, no el stock libre: no resta las unidades reservadas por otros pedidos (RN33). Por eso, una oferta puede aparecer aunque todas sus unidades estén reservadas, y al crear el pedido se rechazaría por falta de stock libre (RN13).
 - **Orden:** por precio; a igual precio, por número de publicación, para que el resultado salga siempre en el mismo orden.
 
 ## 4. Resultado esperado

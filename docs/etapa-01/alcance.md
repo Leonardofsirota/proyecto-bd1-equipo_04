@@ -26,6 +26,7 @@ El sistema funciona como un marketplace de libros: distintos vendedores publican
 - Publicación de ofertas de libros por parte de los vendedores, con precio y condición del ejemplar (nuevo o usado, en distintos grados de conservación).
 - Oferta de un mismo libro por varios vendedores, a distintos precios y en distintas condiciones.
 - Control del stock disponible de cada publicación.
+- Reserva temporal de las unidades de cada pedido pendiente, sin descontarlas del stock hasta confirmar la venta.
 - Pausa o baja de publicaciones sin perder las compras que las incluyen.
 
 ## 4. Ventas
@@ -34,7 +35,7 @@ El sistema funciona como un marketplace de libros: distintos vendedores publican
 - Compras que reúnan libros de uno o varios vendedores.
 - Conservación del precio unitario de cada libro al momento de la compra.
 - Cálculo del total de cada compra a partir de su detalle.
-- Cálculo informativo de un porcentaje de descuento según el total de cada compra.
+- Cálculo informativo del porcentaje y del importe de descuento según el total de cada compra, sin modificar ese total ni lo que se paga.
 - Registro de la dirección de entrega tal como estaba al momento de la compra.
 - Manejo de los estados de las ventas: pendiente, confirmada, entregada y cancelada.
 
@@ -45,6 +46,7 @@ El sistema funciona como un marketplace de libros: distintos vendedores publican
 - Estados del pago: pendiente, aprobado, rechazado y cancelado.
 - Registro de varios intentos de pago por compra, conservando los rechazados o cancelados como historial.
 - Registro de la fecha en que se inicia cada pago y de la fecha en que se acredita.
+- Conservación del rastro de los cobros aprobados que no concretan una venta. Su devolución queda fuera del sistema.
 
 ## 6. Fuera del alcance
 

@@ -16,8 +16,8 @@ Una venta sigue este recorrido:
 
 1. **Catálogo.** Cada edición de un libro se registra una sola vez, identificada por su ISBN.
 2. **Publicación.** Cada vendedor publica su oferta de ese libro, con precio, stock y condición propios. Un mismo libro puede tener ofertas de varios vendedores.
-3. **Pedido.** El cliente arma un pedido con publicaciones de uno o varios vendedores e indica la dirección de entrega.
-4. **Pago.** El cliente paga el pedido completo en línea. Si un intento es rechazado o cancelado, puede registrar uno nuevo.
+3. **Pedido.** El cliente arma un pedido con publicaciones de uno o varios vendedores e indica la dirección de entrega. El pedido reserva esas unidades durante un plazo, sin descontarlas del stock.
+4. **Pago.** El cliente paga el pedido completo en línea. Si un intento es rechazado o cancelado, puede registrar uno nuevo mientras la reserva siga vigente. Cuando se aprueba el pago, se descuenta el stock.
 5. **Seguimiento.** El pedido pasa por los estados pendiente, confirmado y entregado, o termina cancelado.
 
 En su versión inicial, el sistema opera en la provincia de Corrientes. El modelo permite incorporar otras provincias sin modificar su estructura.

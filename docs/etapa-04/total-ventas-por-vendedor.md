@@ -10,8 +10,7 @@ Un pedido con libros de varios vendedores (RN16) cuenta como una venta para cada
 
 ## 2. Quién la usa
 
-- **Vendedor:** para conocer cuánto vendió en un período.
-- **Administrador:** para comparar el desempeño de los vendedores del marketplace.
+El **Administrador**, para comparar el desempeño de los vendedores del marketplace. Como muestra las ventas de todos, no está pensada para un vendedor: cada uno consulta las suyas en [Ventas por publicación](ventas-por-publicacion.md).
 
 ## 3. Cómo lo resuelve
 

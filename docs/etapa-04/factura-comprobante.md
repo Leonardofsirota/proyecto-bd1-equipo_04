@@ -18,7 +18,7 @@ El **Cliente**, como constancia de una compra ya pagada: qué compró, a qué pr
 - **Uniones:** une el pedido con su pago aprobado, el método de pago, el cliente y los renglones; de cada renglón llega al libro a través de la publicación.
 - **Precio histórico:** usa el precio guardado en el renglón al momento de la compra, no el precio actual de la publicación. Así, el comprobante no cambia si el vendedor modifica su precio después (RN26).
 - **Fecha de venta:** es la de aprobación del pago, no la de creación del pedido. Es el mismo [criterio](casos-uso.md#3-qué-se-considera-una-venta) con que los reportes de ventas ubican cada venta en un período.
-- **Subtotal y total:** el subtotal es cantidad × precio unitario. El total suma los subtotales con `SUM(...) OVER (PARTITION BY ...)`, una función de ventana: suma sin agrupar, así cada renglón conserva su detalle y además muestra el total (RN17).
+- **Subtotal y total:** el subtotal es cantidad × precio unitario. El total suma los subtotales con `SUM(...) OVER (PARTITION BY ...)`, una función de ventana: suma sin agrupar, así cada renglón conserva su detalle y además muestra el total (RN17). El comprobante no muestra el descuento, que es informativo y no cambia lo que se paga (RN32).
 - **Renglones:** `ROW_NUMBER()` los numera desde 1.
 
 ## 4. Resultado esperado
