@@ -12,7 +12,7 @@ GO
 
 -- Devuelve el total de un pedido: la suma de cantidad por precio unitario de
 -- cada renglón. Si el pedido no existe o no tiene renglones, devuelve 0.
--- También la usa dbo.usp_RegistrarVenta (registrar_venta/script.sql).
+-- También la usan dbo.usp_CrearPedido y dbo.usp_IniciarPago (registrar_venta/script.sql).
 CREATE FUNCTION dbo.fn_TotalPedido
 (
     @PedidoId INT
