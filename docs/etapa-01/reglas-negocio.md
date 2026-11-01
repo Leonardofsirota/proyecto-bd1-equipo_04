@@ -56,12 +56,12 @@ Se usa _pedido_ para referirse a la compra que realiza un cliente.
 
 ## 6. Conservación del historial
 
-| ID   | Regla               | Descripción                                                                                                                                            |
-| ---- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| RN26 | Precio histórico    | Cada renglón guarda el precio unitario vigente al momento de la compra. Si el vendedor cambia el precio después, los pedidos anteriores no se alteran. |
-| RN27 | Dirección histórica | El pedido guarda una copia de la dirección de entrega, que se mantiene aunque el cliente la edite o la elimine.                                        |
-| RN28 | Bajas lógicas       | Los usuarios y las publicaciones dados de baja dejan de estar activos, pero no se eliminan, para que los pedidos que los incluyen sigan completos.     |
-| RN29 | Historial de pagos  | Los intentos rechazados o cancelados se conservan como parte del historial del pedido.                                                                 |
+| ID   | Regla               | Descripción                                                                                                                                                                                                      |
+| ---- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RN26 | Precio histórico    | Cada renglón guarda el precio unitario vigente al momento de la compra. Si el vendedor cambia el precio después, los pedidos anteriores no se alteran.                                                           |
+| RN27 | Dirección histórica | El pedido guarda una copia de la dirección de entrega, que se mantiene aunque el cliente la edite o la elimine.                                                                                                  |
+| RN28 | Bajas lógicas       | Los usuarios y las publicaciones dados de baja dejan de estar activos, pero no se eliminan, para que los pedidos que los incluyen sigan completos. La baja de un vendedor da de baja sus publicaciones vigentes. |
+| RN29 | Historial de pagos  | Los intentos rechazados o cancelados se conservan como parte del historial del pedido.                                                                                                                           |
 
 ## 7. Descuentos
 

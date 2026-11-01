@@ -93,6 +93,7 @@ Las claves y las restricciones de unicidad no alcanzan para asegurar algunas reg
 | RN22        | Que el importe de cada pago coincida con el total del pedido.                                                                                                                                                            |
 | RN24        | Que un nuevo intento de pago solo se registre si el anterior fue rechazado o cancelado, y que cada pedido tenga a lo sumo un pago aprobado.                                                                              |
 | RN25        | Que la fecha de pago se registre cuando el pago se aprueba.                                                                                                                                                              |
+| RN28        | Que la baja de un vendedor dé de baja sus publicaciones vigentes.                                                                                                                                                        |
 | RN33 a RN37 | Que el stock libre tenga en cuenta las reservas vigentes, y que un pago aprobado solo concrete la venta si hay stock libre para todo el pedido.                                                                          |
 
-El control de estas reglas corresponde a los mecanismos de la Etapa 5: procedimientos, transacciones y triggers.
+El control de estas reglas corresponde a los triggers de `sql/ddl/triggers-consistencia.sql` y a los procedimientos de la Etapa 5.

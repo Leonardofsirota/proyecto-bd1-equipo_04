@@ -636,6 +636,139 @@ BEGIN
 END;
 GO
 
+-- ----------------------------------------------------------------------------
+-- 4. Bajas y renglones nuevos
+--
+-- La baja de un vendedor retira sus publicaciones, un libro conserva al menos un
+-- autor y un renglón nuevo cumple las mismas condiciones que exige usp_CrearPedido.
+-- ----------------------------------------------------------------------------
+
+IF OBJECT_ID(N'dbo.trg_USUARIO_Baja', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_USUARIO_Baja;
+GO
+
+-- La baja de un vendedor da de baja sus publicaciones vigentes, también las pausadas
+-- (RN12, RN28). Usa la fecha del usuario, o la de alta de la publicación si es
+-- posterior: hay publicaciones con fecha_creacion futura, y chk_publicacion_fechas
+-- rechazaría una baja anterior al alta. Reactivar al usuario no las recupera, porque
+-- la baja de una publicación no se revierte.
+CREATE TRIGGER dbo.trg_USUARIO_Baja
+ON dbo.USUARIO
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT UPDATE(fecha_eliminacion)
+        RETURN;
+
+    UPDATE PUB
+    SET PUB.disponible = 0,
+        PUB.fecha_eliminacion = CASE
+                                    WHEN PUB.fecha_creacion > I.fecha_eliminacion THEN PUB.fecha_creacion
+                                    ELSE I.fecha_eliminacion
+                                END
+    FROM dbo.PUBLICACION AS PUB WITH (ROWLOCK, FORCESEEK)
+    INNER JOIN inserted AS I
+        ON I.usuario_id = PUB.usuario_id
+    INNER JOIN deleted AS D
+        ON D.usuario_id = I.usuario_id
+    WHERE I.fecha_eliminacion IS NOT NULL
+      AND D.fecha_eliminacion IS NULL
+      AND PUB.fecha_eliminacion IS NULL;
+END;
+GO
+
+IF OBJECT_ID(N'dbo.trg_AUTOR_LIBRO_UltimoAutor', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_AUTOR_LIBRO_UltimoAutor;
+GO
+
+-- Un libro no se queda sin autores (RN08). Como borrar un libro exige borrar antes sus
+-- filas de AUTOR_LIBRO, un libro mal cargado solo se puede eliminar deshabilitando
+-- este trigger.
+CREATE TRIGGER dbo.trg_AUTOR_LIBRO_UltimoAutor
+ON dbo.AUTOR_LIBRO
+AFTER UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Un UPDATE que mueve un autor a otro libro deja el libro anterior en deleted.
+    IF EXISTS (
+        SELECT 1
+        FROM deleted AS D
+        WHERE NOT EXISTS (
+                  SELECT 1
+                  FROM dbo.AUTOR_LIBRO AS AL
+                  WHERE AL.libro_id = D.libro_id
+              )
+    )
+        THROW 50291, 'trg_AUTOR_LIBRO_UltimoAutor: un libro no puede quedarse sin autores (RN08).', 1;
+END;
+GO
+
+IF OBJECT_ID(N'dbo.trg_DETALLE_Alta', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_DETALLE_Alta;
+GO
+
+-- Un renglón nuevo va en un pedido Pendiente y sin pagos, con una publicación activa,
+-- stock libre y su precio vigente (RN12, RN13, RN22, RN26). usp_CrearPedido valida lo
+-- mismo antes de escribir, con las publicaciones bloqueadas: este control cubre el DML
+-- directo. No revisa al vendedor: con trg_USUARIO_Baja y trg_PUBLICACION_Vendedor, una
+-- publicación activa no puede ser de un vendedor dado de baja.
+CREATE TRIGGER dbo.trg_DETALLE_Alta
+ON dbo.PEDIDO_DETALLE
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Con un pago iniciado, un renglón más dejaría el importe distinto del total.
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.PEDIDO AS P
+            ON P.pedido_id = I.pedido_id
+        INNER JOIN dbo.PEDIDO_ESTADO AS PE
+            ON PE.pedido_estado_id = P.pedido_estado_id
+        WHERE PE.nombre <> 'Pendiente'
+           OR EXISTS (
+                  SELECT 1
+                  FROM dbo.PAGO AS PG
+                  WHERE PG.pedido_id = I.pedido_id
+              )
+    )
+        THROW 50261, 'trg_DETALLE_Alta: el pedido no esta Pendiente o ya tiene pagos (RN22).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.PUBLICACION AS PUB
+            ON PUB.publicacion_id = I.publicacion_id
+        WHERE PUB.disponible = 0
+           OR PUB.fecha_eliminacion IS NOT NULL
+    )
+        THROW 50262, 'trg_DETALLE_Alta: la publicacion no esta disponible (RN12).', 1;
+
+    -- Excluye su propio pedido: la fila ya está insertada y contaría como reserva.
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        WHERE dbo.fn_StockLibre(I.publicacion_id, I.pedido_id) < I.cantidad
+    )
+        THROW 50263, 'trg_DETALLE_Alta: no hay stock libre suficiente (RN13).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.PUBLICACION AS PUB
+            ON PUB.publicacion_id = I.publicacion_id
+        WHERE I.precio_unitario <> PUB.precio
+    )
+        THROW 50264, 'trg_DETALLE_Alta: el precio no coincide con el vigente (RN26).', 1;
+END;
+GO
+
 -- Vuelve a habilitar la ejecución por si el control inicial la detuvo.
 SET NOEXEC OFF;
 GO

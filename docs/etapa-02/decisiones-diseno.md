@@ -63,7 +63,7 @@ Además, registra dos fechas con significados distintos (RN25):
 
 Los usuarios y las publicaciones no se eliminan: se marcan como dados de baja, para que los pedidos que los incluyen sigan completos (RN28).
 
-- **Usuarios.** La baja se registra con una fecha de eliminación; mientras está vacía, el usuario está activo. A diferencia de un simple indicador, la fecha registra además cuándo ocurrió la baja.
+- **Usuarios.** La baja se registra con una fecha de eliminación; mientras está vacía, el usuario está activo. A diferencia de un simple indicador, la fecha registra además cuándo ocurrió la baja. La baja de un vendedor da de baja sus publicaciones vigentes.
 - **Publicaciones.** Se distinguen dos situaciones. La pausa es temporal y se indica con la marca de disponibilidad. La baja es definitiva y se registra con una fecha de eliminación. Una publicación dada de baja nunca puede figurar como disponible.
 
 La regla que impide duplicar una oferta (sección 3) solo considera las publicaciones vigentes, es decir, las que no fueron dadas de baja. Así, un vendedor puede volver a publicar un libro cuya oferta anterior dio de baja. Una publicación pausada sigue vigente: para volver a ofrecerla, el vendedor la reactiva.

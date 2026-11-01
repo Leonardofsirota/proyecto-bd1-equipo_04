@@ -1,6 +1,7 @@
 # Demostración de `registrar_venta/script.sql`
 
 - **Fecha:** 2026-10-31 10:02
+- **Repetición:** 2026-11-01, con los 15 triggers de `sql/ddl/triggers-consistencia.sql`: 47 de 47. Los ID, las horas y el checksum de las tablas son de la corrida original.
 - **Base temporal:** `tmp_validacion_rv`, recién cargada con el DDL y los datos de prueba
 - **Servidor:** Microsoft SQL Server 2025 (RTM) Express Edition (64-bit)
 - **Método:** salida de `sqlcmd`, agrupada por caso: primero lo que devuelve cada procedimiento y después las comprobaciones de `@Resultados`.
@@ -298,7 +299,7 @@ Datos previos a la demostración:
 | usp_CrearPedido: carrito vacío                   | 50103    | 50103    | OK        |
 | usp_CrearPedido: cantidad cero                   | 50104    | 50104    | OK        |
 | usp_CrearPedido: publicación no disponible       | 50105    | 50105    | OK        |
-| usp_CrearPedido: vendedor dado de baja           | 50106    | 50106    | OK        |
+| usp_CrearPedido: vendedor dado de baja           | 50105    | 50105    | OK        |
 | usp_CrearPedido: más unidades que el stock libre | 50107    | 50107    | OK        |
 | usp_IniciarPago: método inexistente              | 50111    | 50111    | OK        |
 | usp_IniciarPago: pedido no pendiente             | 50112    | 50112    | OK        |

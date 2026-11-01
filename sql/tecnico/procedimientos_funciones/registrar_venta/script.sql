@@ -18,9 +18,11 @@ END;
 GO
 
 -- Se crean en sql/ddl/triggers-consistencia.sql. Sin el primero, una venta no confirma
--- el pedido ni descuenta el stock, y no da error. #LimpiarDemoVenta deshabilita los
+-- el pedido ni descuenta el stock, y no da error. Sin el segundo, usp_CrearPedido
+-- acepta publicaciones de un vendedor dado de baja. #LimpiarDemoVenta deshabilita los
 -- otros dos para poder borrar, y DISABLE TRIGGER falla si no existen.
 IF OBJECT_ID(N'dbo.trg_PAGO_ConfirmarPedido', N'TR') IS NULL
+   OR OBJECT_ID(N'dbo.trg_USUARIO_Baja', N'TR') IS NULL
    OR OBJECT_ID(N'dbo.trg_PAGO_SinBorrado', N'TR') IS NULL
    OR OBJECT_ID(N'dbo.trg_DETALLE_Congelado', N'TR') IS NULL
 BEGIN
@@ -227,17 +229,6 @@ BEGIN
             THROW 50105,
                   'Hay publicaciones inexistentes, no disponibles o dadas de baja.',
                   1;
-
-        IF EXISTS (
-            SELECT 1
-            FROM @Carrito AS C
-            INNER JOIN dbo.PUBLICACION AS PUB
-                ON PUB.publicacion_id = C.publicacion_id
-            INNER JOIN dbo.USUARIO AS V
-                ON V.usuario_id = PUB.usuario_id
-            WHERE V.fecha_eliminacion IS NOT NULL
-        )
-            THROW 50106, 'Hay publicaciones de un vendedor dado de baja.', 1;
 
         IF EXISTS (
             SELECT 1
@@ -1417,7 +1408,7 @@ BEGIN TRY
     INSERT INTO @Resultados (caso, esperado, obtenido)
     VALUES ('10. usp_CrearPedido: publicación no disponible', '50105', CAST(@Error AS VARCHAR(10)));
 
-    -- Error 50106: el vendedor de la publicación está dado de baja
+    -- Error 50105: la baja del vendedor dio de baja su publicación
     DELETE FROM @Carrito;
     INSERT INTO @Carrito (publicacion_id, cantidad)
     VALUES (@PubBaja, 1);
@@ -1435,7 +1426,7 @@ BEGIN TRY
     SET @Abiertas = @Abiertas + @@TRANCOUNT;
 
     INSERT INTO @Resultados (caso, esperado, obtenido)
-    VALUES ('10. usp_CrearPedido: vendedor dado de baja', '50106', CAST(@Error AS VARCHAR(10)));
+    VALUES ('10. usp_CrearPedido: vendedor dado de baja', '50105', CAST(@Error AS VARCHAR(10)));
 
     -- Error 50107: pide más unidades que el stock libre
     DELETE FROM @Carrito;
