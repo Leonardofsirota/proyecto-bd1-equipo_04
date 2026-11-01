@@ -1,9 +1,9 @@
 ﻿USE [sistema-venta-libros];
 GO
 
--- Quedan registradas en cada objeto. Sin QUOTED_IDENTIFIER, el UPDATE sobre
--- PUBLICACION falla con el error 1934 desde sqlcmd, porque la tabla tiene un
--- índice filtrado.
+-- Quedan registradas en cada objeto. Los procedimientos ya no actualizan
+-- PUBLICACION, pero la demostración sí escribe en ella: sin QUOTED_IDENTIFIER falla
+-- con el error 1934 desde sqlcmd, porque la tabla tiene un índice filtrado.
 SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
 GO
@@ -13,6 +13,15 @@ GO
 IF OBJECT_ID(N'dbo.fn_TotalPedido', N'FN') IS NULL
 BEGIN
     RAISERROR(N'Falta dbo.fn_TotalPedido: ejecutar antes calcular_descuento_pedido/script.sql. El script se detuvo sin realizar cambios.', 16, 1);
+    SET NOEXEC ON;
+END;
+GO
+
+-- Sin este trigger, una venta no confirma el pedido ni descuenta el stock, y no da
+-- error. Se crea en sql/ddl/triggers-consistencia.sql.
+IF OBJECT_ID(N'dbo.trg_PAGO_ConfirmarPedido', N'TR') IS NULL
+BEGIN
+    RAISERROR(N'Falta dbo.trg_PAGO_ConfirmarPedido: ejecutar antes sql/ddl/triggers-consistencia.sql. El script se detuvo sin realizar cambios.', 16, 1);
     SET NOEXEC ON;
 END;
 GO
@@ -414,8 +423,9 @@ GO
 -- Procesa un pago Pendiente. Un pago Rechazado o Cancelado solo cambia el pago: el
 -- pedido sigue Pendiente y el cliente puede reintentar si la reserva sigue vigente.
 -- Un pago Aprobado concreta la venta si hay stock libre para todo el pedido, aunque
--- la aprobación llegue tarde: confirma el pedido, descuenta el stock y marca
--- disponible = 0 en las publicaciones que llegan a cero.
+-- la aprobación llegue tarde. El procedimiento solo pasa el pago a Aprobado: los
+-- triggers de sql/ddl/triggers-consistencia.sql confirman el pedido, descuentan el
+-- stock y marcan disponible = 0 en las publicaciones que llegan a cero.
 -- Un pago Aprobado sin stock libre o con el pedido fuera de Pendiente no es una
 -- venta: el pago queda Cancelado con fecha_pago, como rastro del cobro, y un pedido
 -- Pendiente pasa a Cancelado. Termina en COMMIT y sin error, porque un ROLLBACK
@@ -499,7 +509,9 @@ BEGIN
                 END;
 
                 -- El vencimiento de la reserva no se comprueba: una aprobación
-                -- tardía es válida si hay stock libre.
+                -- tardía es válida si hay stock libre. Se decide antes de escribir
+                -- porque el error de trg_PAGO_ConfirmarPedido revertiría el pago, y
+                -- se perdería el rastro del cobro.
                 IF EXISTS (
                     SELECT 1
                     FROM dbo.PEDIDO_DETALLE AS PD
@@ -513,10 +525,7 @@ BEGIN
                                  + 'no hay venta y la devolucion se resuelve fuera del sistema';
                 END
                 ELSE
-                BEGIN
-                    SET @NuevoEstadoPedido = 'Confirmado';
                     SET @Mensaje = 'Venta registrada correctamente';
-                END;
             END;
         END;
 
@@ -529,7 +538,7 @@ BEGIN
             fecha_pago = @FechaPago
         WHERE pago_id = @PagoId;
 
-        IF @NuevoEstadoPedido <> @EstadoPedido
+        IF @NuevoEstadoPedido = 'Cancelado' AND @EstadoPedido <> 'Cancelado'
             UPDATE dbo.PEDIDO
             SET pedido_estado_id = (
                     SELECT PE.pedido_estado_id
@@ -537,20 +546,6 @@ BEGIN
                     WHERE PE.nombre = @NuevoEstadoPedido
                 )
             WHERE pedido_id = @PedidoId;
-
-        -- FORCESEEK evita un recorrido de PUBLICACION, que chocaría con las filas
-        -- que tienen tomadas otros pedidos.
-        IF @NuevoEstadoPago = 'Aprobado'
-            UPDATE PUB
-            SET PUB.stock = PUB.stock - PD.cantidad,
-                PUB.disponible = CASE
-                                     WHEN PUB.stock = PD.cantidad THEN 0
-                                     ELSE PUB.disponible
-                                 END
-            FROM dbo.PUBLICACION AS PUB WITH (ROWLOCK, FORCESEEK)
-            INNER JOIN dbo.PEDIDO_DETALLE AS PD
-                ON PD.publicacion_id = PUB.publicacion_id
-            WHERE PD.pedido_id = @PedidoId;
 
         COMMIT TRANSACTION;
     END TRY

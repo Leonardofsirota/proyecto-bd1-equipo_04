@@ -1,0 +1,263 @@
+﻿/* ============================================================================
+   Sistema de venta de libros - Triggers de consistencia
+
+   Motor:      SQL Server 2012 o superior (T-SQL)
+   Uso:        abrir este archivo en SSMS y ejecutarlo completo (F5).
+
+   - Hacen cumplir las reglas que dependen de otras filas o de otras tablas, aunque
+     los datos se modifiquen fuera de los procedimientos almacenados.
+   - Orden de instalación: sistema-venta-libros.sql, datos_prueba.sql,
+     calcular_descuento_pedido/script.sql, este script y registrar_venta/script.sql.
+   - No forman parte de sistema-venta-libros.sql porque controlan el ciclo de vida
+     de las filas, y los datos históricos no pasaron por ese ciclo: se cargan con
+     pedidos Entregados y pagos Aprobados. Por eso se instalan después de la carga.
+   - dbo.fn_StockLibre la crea registrar_venta/script.sql, que se ejecuta después.
+     No importa: el nombre se resuelve al ejecutarse el trigger.
+   - La cadena pago, pedido y publicación necesita la opción de servidor
+     nested triggers en 1, su valor por defecto. Con 0 se corta sin dar error.
+   - Se puede ejecutar varias veces: cada trigger se elimina y se vuelve a crear.
+   ============================================================================ */
+
+USE [sistema-venta-libros];
+GO
+
+-- Quedan registradas en cada trigger. Sin QUOTED_IDENTIFIER, el UPDATE sobre
+-- PUBLICACION falla con el error 1934, porque la tabla tiene un índice filtrado.
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
+
+-- dbo.fn_TotalPedido se crea en calcular_descuento_pedido/script.sql.
+-- SET NOEXEC ON hace que los lotes siguientes se compilen sin ejecutarse.
+IF OBJECT_ID(N'dbo.fn_TotalPedido', N'FN') IS NULL
+   OR NOT EXISTS (SELECT 1 FROM dbo.PEDIDO)
+BEGIN
+    RAISERROR(N'Faltan datos: ejecutar antes datos_prueba.sql y calcular_descuento_pedido/script.sql. El script se detuvo sin realizar cambios.', 16, 1);
+    SET NOEXEC ON;
+END;
+GO
+
+-- Un trigger AFTER lee después de escribir, lo contrario de la regla de los
+-- procedimientos: primero bloquear y validar, después escribir. Con el aislamiento
+-- por defecto, dbo.fn_StockLibre y las lecturas de PAGO esperan las filas sin
+-- confirmar de otra sesión, y dos sesiones pueden bloquearse mutuamente. Con esta
+-- opción, esas lecturas usan la última versión confirmada y no esperan.
+-- ROLLBACK IMMEDIATE revierte las transacciones abiertas en otras conexiones de la
+-- base: conviene ejecutar el script sin actividad.
+IF (SELECT is_read_committed_snapshot_on FROM sys.databases WHERE database_id = DB_ID()) = 0
+    ALTER DATABASE [sistema-venta-libros] SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE;
+GO
+
+-- ----------------------------------------------------------------------------
+-- 1. Ciclo de venta
+--
+-- Forman una cadena: aprobar un pago confirma su pedido, confirmar un pedido
+-- descuenta el stock y el stock en cero oculta la publicación. Van juntos, porque
+-- trg_PEDIDO_Transicion impide llegar al descuento sin un pago aprobado.
+-- ----------------------------------------------------------------------------
+
+IF OBJECT_ID(N'dbo.trg_PAGO_ConfirmarPedido', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_PAGO_ConfirmarPedido;
+GO
+
+-- Al aprobarse un pago, confirma su pedido si está Pendiente y hay stock libre para
+-- todos sus renglones (RN19, RN37). usp_RegistrarVenta comprueba lo mismo antes de
+-- escribir, para no perder el rastro del cobro: este control cubre el DML directo.
+CREATE TRIGGER dbo.trg_PAGO_ConfirmarPedido
+ON dbo.PAGO
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @Pedidos TABLE (pedido_id INT NOT NULL PRIMARY KEY);
+
+    INSERT INTO @Pedidos (pedido_id)
+    SELECT DISTINCT I.pedido_id
+    FROM inserted AS I
+    INNER JOIN deleted AS D
+        ON D.pago_id = I.pago_id
+    INNER JOIN dbo.PAGO_ESTADO AS NUEVO
+        ON NUEVO.pago_estado_id = I.pago_estado_id
+    INNER JOIN dbo.PAGO_ESTADO AS ANTERIOR
+        ON ANTERIOR.pago_estado_id = D.pago_estado_id
+    WHERE NUEVO.nombre = 'Aprobado'
+      AND ANTERIOR.nombre <> 'Aprobado';
+
+    IF NOT EXISTS (SELECT 1 FROM @Pedidos)
+        RETURN;
+
+    IF EXISTS (
+        SELECT 1
+        FROM @Pedidos AS X
+        INNER JOIN dbo.PEDIDO AS P
+            ON P.pedido_id = X.pedido_id
+        INNER JOIN dbo.PEDIDO_ESTADO AS PE
+            ON PE.pedido_estado_id = P.pedido_estado_id
+        WHERE PE.nombre <> 'Pendiente'
+    )
+        THROW 50201, 'trg_PAGO_ConfirmarPedido: pago aprobado con el pedido fuera de Pendiente (RN19, RN37).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM @Pedidos AS X
+        INNER JOIN dbo.PEDIDO_DETALLE AS PD
+            ON PD.pedido_id = X.pedido_id
+        WHERE dbo.fn_StockLibre(PD.publicacion_id, PD.pedido_id) < PD.cantidad
+    )
+        THROW 50202, 'trg_PAGO_ConfirmarPedido: pago aprobado sin stock libre para todo el pedido (RN19, RN37).', 1;
+
+    UPDATE P
+    SET P.pedido_estado_id = PE.pedido_estado_id
+    FROM dbo.PEDIDO AS P
+    INNER JOIN @Pedidos AS X
+        ON X.pedido_id = P.pedido_id
+    INNER JOIN dbo.PEDIDO_ESTADO AS PE
+        ON PE.nombre = 'Confirmado';
+END;
+GO
+
+IF OBJECT_ID(N'dbo.trg_PEDIDO_DescontarStock', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_PEDIDO_DescontarStock;
+GO
+
+-- Al confirmarse un pedido, descuenta del stock la cantidad vendida (RN14). Suma por
+-- publicación porque UPDATE ... FROM aplica un solo cruce por fila: dos pedidos
+-- confirmados en una sentencia descontarían una sola vez. FORCESEEK evita un
+-- recorrido de PUBLICACION, que chocaría con las filas tomadas por otros pedidos.
+CREATE TRIGGER dbo.trg_PEDIDO_DescontarStock
+ON dbo.PEDIDO
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT UPDATE(pedido_estado_id)
+        RETURN;
+
+    UPDATE PUB
+    SET PUB.stock = PUB.stock - VENDIDO.cantidad
+    FROM dbo.PUBLICACION AS PUB WITH (ROWLOCK, FORCESEEK)
+    INNER JOIN (
+        SELECT PD.publicacion_id, SUM(PD.cantidad) AS cantidad
+        FROM inserted AS I
+        INNER JOIN deleted AS D
+            ON D.pedido_id = I.pedido_id
+        INNER JOIN dbo.PEDIDO_ESTADO AS NUEVO
+            ON NUEVO.pedido_estado_id = I.pedido_estado_id
+        INNER JOIN dbo.PEDIDO_ESTADO AS ANTERIOR
+            ON ANTERIOR.pedido_estado_id = D.pedido_estado_id
+        INNER JOIN dbo.PEDIDO_DETALLE AS PD
+            ON PD.pedido_id = I.pedido_id
+        WHERE NUEVO.nombre = 'Confirmado'
+          AND ANTERIOR.nombre = 'Pendiente'
+        GROUP BY PD.publicacion_id
+    ) AS VENDIDO
+        ON VENDIDO.publicacion_id = PUB.publicacion_id;
+END;
+GO
+
+IF OBJECT_ID(N'dbo.trg_PUBLICACION_Agotada', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_PUBLICACION_Agotada;
+GO
+
+-- Una publicación sin stock deja de estar disponible (RN12, RN14). Reponer stock no
+-- la reactiva: disponible no distingue una publicación agotada de una pausada, así
+-- que reanudarla es una decisión del vendedor.
+CREATE TRIGGER dbo.trg_PUBLICACION_Agotada
+ON dbo.PUBLICACION
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE PUB
+    SET PUB.disponible = 0
+    FROM dbo.PUBLICACION AS PUB WITH (ROWLOCK, FORCESEEK)
+    INNER JOIN inserted AS I
+        ON I.publicacion_id = PUB.publicacion_id
+    WHERE I.stock = 0
+      AND I.disponible = 1;
+END;
+GO
+
+IF OBJECT_ID(N'dbo.trg_PEDIDO_Transicion', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_PEDIDO_Transicion;
+GO
+
+-- Protege el ciclo del pedido y sus datos copiados (RN19, RN20, RN27). Los
+-- procedimientos controlan el estado por su cuenta: este control cubre el DML directo.
+-- fecha_pedido queda libre porque la demostración la mueve para simular el tiempo.
+-- Cancelar un pedido no cancela sus pagos: el rastro del cobro lo maneja RN37.
+CREATE TRIGGER dbo.trg_PEDIDO_Transicion
+ON dbo.PEDIDO
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Los CHECK no admiten texto vacío en las columnas opcionales, así que COALESCE
+    -- no confunde NULL con un valor. BIN2 hace que un cambio de mayúsculas cuente.
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN deleted AS D
+            ON D.pedido_id = I.pedido_id
+        WHERE I.usuario_id <> D.usuario_id
+           OR I.ciudad_id <> D.ciudad_id
+           OR I.envio_altura <> D.envio_altura
+           OR I.envio_calle <> D.envio_calle COLLATE Latin1_General_BIN2
+           OR I.envio_codigo_postal <> D.envio_codigo_postal COLLATE Latin1_General_BIN2
+           OR COALESCE(I.envio_piso, '') <> COALESCE(D.envio_piso, '') COLLATE Latin1_General_BIN2
+           OR COALESCE(I.envio_departamento, '') <> COALESCE(D.envio_departamento, '') COLLATE Latin1_General_BIN2
+           OR COALESCE(I.envio_referencia, '') <> COALESCE(D.envio_referencia, '') COLLATE Latin1_General_BIN2
+    )
+        THROW 50214, 'trg_PEDIDO_Transicion: el cliente y la direccion de un pedido no cambian (RN27).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN deleted AS D
+            ON D.pedido_id = I.pedido_id
+        INNER JOIN dbo.PEDIDO_ESTADO AS NUEVO
+            ON NUEVO.pedido_estado_id = I.pedido_estado_id
+        INNER JOIN dbo.PEDIDO_ESTADO AS ANTERIOR
+            ON ANTERIOR.pedido_estado_id = D.pedido_estado_id
+        WHERE I.pedido_estado_id <> D.pedido_estado_id
+          AND NOT (
+                  (ANTERIOR.nombre = 'Pendiente' AND NUEVO.nombre IN ('Confirmado', 'Cancelado'))
+               OR (ANTERIOR.nombre = 'Confirmado' AND NUEVO.nombre = 'Entregado')
+              )
+    )
+        THROW 50215, 'trg_PEDIDO_Transicion: cambio de estado no permitido (RN19, RN20).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN deleted AS D
+            ON D.pedido_id = I.pedido_id
+        INNER JOIN dbo.PEDIDO_ESTADO AS NUEVO
+            ON NUEVO.pedido_estado_id = I.pedido_estado_id
+        WHERE I.pedido_estado_id <> D.pedido_estado_id
+          AND NUEVO.nombre = 'Confirmado'
+          AND NOT EXISTS (
+                  SELECT 1
+                  FROM dbo.PAGO AS PG
+                  INNER JOIN dbo.PAGO_ESTADO AS PGE
+                      ON PGE.pago_estado_id = PG.pago_estado_id
+                  WHERE PG.pedido_id = I.pedido_id
+                    AND PGE.nombre = 'Aprobado'
+              )
+    )
+        THROW 50216, 'trg_PEDIDO_Transicion: un pedido se confirma solo con un pago aprobado (RN19).', 1;
+END;
+GO
+
+-- Corre primero para que el error no dependa del orden de los triggers: si no,
+-- trg_PEDIDO_DescontarStock puede fallar antes con el 547 de stock negativo.
+EXEC sp_settriggerorder @triggername = N'dbo.trg_PEDIDO_Transicion', @order = N'First', @stmttype = N'UPDATE';
+GO
+
+-- Vuelve a habilitar la ejecución por si el control inicial la detuvo.
+SET NOEXEC OFF;
+GO

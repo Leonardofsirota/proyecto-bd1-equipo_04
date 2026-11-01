@@ -15,6 +15,7 @@ Este documento muestra cómo se comprobó que la implementación funciona: que l
 | Datos       | Cantidad de filas y coherencia con las reglas de negocio.                        | 21 tablas, 15 controles | Sin diferencias |
 | Integridad  | Que se rechacen los datos inválidos y se acepten los válidos.                    | 59 casos                | 59 de 59        |
 | Historial   | Que las ventas no se alteren por cambios de precio, de dirección o por bajas.    | 4 operaciones           | Correcto        |
+| Triggers    | Que se rechacen las operaciones directas inválidas y se propaguen los cambios.   | 26 casos, 3 controles   | 26 de 26        |
 
 ## 2. Estructura creada
 
@@ -156,7 +157,44 @@ Estas pruebas comprueban que los cambios posteriores no alteran las ventas ya re
 | Borrar la dirección 2                                      | El pedido 259 conserva su copia: Av. 3 de Abril 850.             | RN27  |
 | Dar de baja al cliente 7 y a la publicación 202            | Los 18 renglones que los involucran siguen pudiendo consultarse. | RN28  |
 
-## 7. Alcance de las pruebas
+## 7. Triggers
+
+Estas pruebas ejercitan los [triggers](restricciones-integridad.md#6-triggers) con sentencias directas sobre las tablas, sin pasar por los procedimientos. Cada caso corre en su propia transacción y se deshace al terminar, porque un error dentro de un trigger condena la transacción. En los rechazos se comprueba el número de error, y en las operaciones aceptadas, también el efecto que debía propagarse.
+
+| Operación                                                                                                       | Resultado                                                        | Lo controla                 |
+| --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------- |
+| Cancelar el pedido de un pago pendiente y aprobar ese pago                                                      | Rechazado (50201)                                                | `trg_PAGO_ConfirmarPedido`  |
+| Aprobar un pago rechazado de un pedido entregado                                                                | Rechazado (50201)                                                | `trg_PAGO_ConfirmarPedido`  |
+| Dejar sin stock las publicaciones de un pago pendiente y aprobarlo                                              | Rechazado (50202)                                                | `trg_PAGO_ConfirmarPedido`  |
+| Pasar a confirmado un pedido pendiente sin pago                                                                 | Rechazado (50216)                                                | `trg_PEDIDO_Transicion`     |
+| Lo mismo, con sus publicaciones sin stock                                                                       | Rechazado (50216), no por `chk_publicacion_stock`                | Orden de los triggers       |
+| Pasar de pendiente a entregado, de cancelado a pendiente, de entregado a confirmado y de confirmado a cancelado | Rechazado (50215), cada uno                                      | `trg_PEDIDO_Transicion`     |
+| Cambiar el cliente, la ciudad, la calle, la altura, el código postal, el piso o el departamento                 | Rechazado (50214), cada uno                                      | `trg_PEDIDO_Transicion`     |
+| Cambiar solo las mayúsculas de la calle                                                                         | Rechazado (50214)                                                | `trg_PEDIDO_Transicion`     |
+| Cambiar la referencia de vacía a un texto, y de un texto a vacía                                                | Rechazado (50214), cada uno                                      | `trg_PEDIDO_Transicion`     |
+| Aprobar un pago con stock justo                                                                                 | Aceptado: pedido confirmado, stock 0 y publicación no disponible | Los tres de la cadena       |
+| Aprobar dos pagos en una sentencia, de 2 unidades de la misma publicación con stock 10                          | Aceptado: stock 6                                                | `trg_PEDIDO_DescontarStock` |
+| Dar de alta una publicación con stock 0                                                                         | Aceptado: queda no disponible                                    | `trg_PUBLICACION_Agotada`   |
+| Reponer stock de una publicación agotada                                                                        | Aceptado: sigue no disponible                                    | `trg_PUBLICACION_Agotada`   |
+| Cancelar un pedido pendiente                                                                                    | Aceptado: stock sin cambios                                      | `trg_PEDIDO_Transicion`     |
+| Pasar un pedido de confirmado a entregado                                                                       | Aceptado: stock sin cambios                                      | `trg_PEDIDO_Transicion`     |
+| Mover la fecha de un pedido                                                                                     | Aceptado                                                         | `trg_PEDIDO_Transicion`     |
+
+Los 26 casos dieron el resultado esperado. Para comprobar que la prueba del orden no pasaba por casualidad, se invirtió el orden de los triggers de PEDIDO: el caso falló con el error 547, como se esperaba, y volvió a pasar al repetir el script.
+
+**Datos cargados.** Los triggers revisan solo las filas que cambian, así que los datos de prueba se comprobaron con consultas. Ninguna encontró casos:
+
+| Reglas     | Se buscaron                                                    |
+| ---------- | -------------------------------------------------------------- |
+| RN19       | Pagos aprobados con el pedido fuera de confirmado o entregado. |
+| RN19       | Pedidos confirmados o entregados sin pago aprobado.            |
+| RN12, RN14 | Publicaciones sin stock que figuran como disponibles.          |
+
+**Instalación.** Con los triggers instalados después de la carga, `datos_prueba.sql` sigue cargando sus filas sin cambios. El script de triggers se detiene sin crear nada si la base no tiene datos o falta `fn_TotalPedido`, y `registrar_venta/script.sql` se detiene si falta `trg_PAGO_ConfirmarPedido`. Repetir el script de triggers los reemplaza y conserva el orden.
+
+**Flujo completo.** Con los triggers activos, la demostración de `registrar_venta/script.sql` dio 47 de 47 comprobaciones, sin dejar filas. Las [pruebas de concurrencia](../../sql/tecnico/procedimientos_funciones/registrar_venta/evidencias/concurrencia.md) dieron los cinco casos correctos y ningún interbloqueo.
+
+## 8. Alcance de las pruebas
 
 - **Reglas que dependen de otras filas.** Se verificó que los datos de prueba las cumplen, no que el motor impida violarlas: hoy, un pedido de un vendedor o un renglón sin stock suficiente se aceptarían. Su control y sus pruebas corresponden a la Etapa 5.
 - **Versión del motor.** Las pruebas corrieron en SQL Server 2025. La compatibilidad con la versión 2012 surge de la sintaxis elegida, no de haberlas repetido en esa versión.

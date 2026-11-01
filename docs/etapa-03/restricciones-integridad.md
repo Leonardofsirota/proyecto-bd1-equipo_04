@@ -14,6 +14,8 @@ El esquema protege los datos en tres niveles:
 
 Una operación que incumple cualquiera de ellas se rechaza entera, y el mensaje de error nombra la restricción incumplida.
 
+Las reglas que dependen de otras filas o de otras tablas no pueden expresarse con estos mecanismos. De ellas se ocupan los [triggers](#6-triggers) y los procedimientos de la Etapa 5.
+
 ## 2. Integridad de entidad
 
 Cada tabla tiene una clave primaria numerada por el motor, que no se repite ni puede quedar vacía. Pero ese número no tiene significado propio, así que no alcanza para evitar duplicados reales: dos filas con distinto ID podrían describir el mismo libro. De eso se ocupan las restricciones de unicidad:
@@ -137,3 +139,23 @@ Cuatro columnas obligatorias tienen un valor por defecto, que el motor completa 
 | RN28        | Nada se borra en cascada, y una publicación dada de baja no puede figurar como disponible.          | —                                                       |
 
 RN17 y RN29 se cumplen por la forma de las tablas: el total del pedido no se almacena, y un pedido admite varios intentos de pago. Las restantes no pueden expresarse con restricciones y se implementan en la Etapa 5: las que dependen de otras filas o de otras tablas están listadas en [Modelo relacional](../etapa-02/modelo-relacional.md#5-reglas-que-el-esquema-no-garantiza), y las de permisos (RN02 y RN09) corresponden a la seguridad de la base.
+
+## 6. Triggers
+
+Los triggers de `sql/ddl/triggers-consistencia.sql` controlan reglas que dependen de otras filas o de otras tablas. Se cumplen aunque los datos se modifiquen con sentencias directas, sin pasar por los procedimientos:
+
+| Trigger                     | Tabla y operación                | Reglas           | Qué impide o propaga                                                                                                                                          |
+| --------------------------- | -------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trg_PAGO_ConfirmarPedido`  | PAGO, `UPDATE`                   | RN19, RN37       | Al aprobarse un pago, confirma su pedido. Impide aprobarlo con el pedido fuera de pendiente (error 50201) o sin stock libre para todos sus renglones (50202). |
+| `trg_PEDIDO_DescontarStock` | PEDIDO, `UPDATE`                 | RN14             | Al pasar un pedido de pendiente a confirmado, descuenta del stock la cantidad vendida.                                                                        |
+| `trg_PUBLICACION_Agotada`   | PUBLICACION, `INSERT` y `UPDATE` | RN12, RN14       | Marca como no disponible la publicación que queda con stock cero.                                                                                             |
+| `trg_PEDIDO_Transicion`     | PEDIDO, `UPDATE`                 | RN19, RN20, RN27 | Impide cambiar el cliente, la ciudad o la dirección copiada (50214), pasar a un estado no permitido (50215) y confirmar un pedido sin pago aprobado (50216).  |
+
+Las únicas transiciones de estado permitidas son de pendiente a confirmado, de pendiente a cancelado y de confirmado a entregado.
+
+- **Una cadena en una sola transacción.** Aprobar un pago confirma el pedido, confirmar el pedido descuenta el stock y el stock en cero oculta la publicación. Todo ocurre dentro de la sentencia que aprueba el pago: si un paso falla, se revierte entero. La cadena necesita la opción de servidor `nested triggers` en 1, su valor por defecto; con 0 se corta sin dar error.
+- **Relación con los procedimientos.** `usp_RegistrarVenta` solo cambia el estado del pago: la confirmación y el descuento son de los triggers. Conserva su propio control del stock libre porque debe decidir antes de escribir: un error del trigger revertiría el pago, y se perdería el rastro del cobro (RN37).
+- **Orden.** `trg_PEDIDO_Transicion` corre primero entre los triggers de PEDIDO, para que el error no dependa del orden: de lo contrario, un pedido sin pago ni stock podría fallar por `chk_publicacion_stock`.
+- **Reponer stock no reactiva una publicación.** `disponible` no distingue una publicación agotada de una pausada, así que reanudarla es una decisión del vendedor.
+- **Fechas libres.** `fecha_pedido` no se congela: la demostración de la Etapa 5 la mueve para simular el paso del tiempo.
+- **Filas ya cargadas.** Los triggers revisan solo las filas que cambian. Los datos de prueba se comprobaron aparte, en [Pruebas y validación](pruebas-validacion.md#7-triggers).

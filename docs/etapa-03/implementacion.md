@@ -4,14 +4,27 @@ Este documento explica cómo el modelo relacional de la Etapa 2 se llevó a SQL 
 
 ## 1. Motor y scripts
 
-La base se implementó en SQL Server con T-SQL, compatible con la versión 2012 o superior. La implementación se reparte en dos scripts, que se ejecutan completos y en este orden:
+La base se implementó en SQL Server con T-SQL, compatible con la versión 2012 o superior. La implementación se reparte en tres scripts, que se ejecutan completos:
 
-| Paso | Script                             | Qué hace                                                                |
-| ---- | ---------------------------------- | ----------------------------------------------------------------------- |
-| 1    | `sql/ddl/sistema-venta-libros.sql` | Crea la base `sistema-venta-libros`, sus 21 tablas y sus restricciones. |
-| 2    | `sql/dml/datos_prueba.sql`         | Carga los datos de prueba.                                              |
+| Script                              | Qué hace                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------- |
+| `sql/ddl/sistema-venta-libros.sql`  | Crea la base `sistema-venta-libros`, sus 21 tablas y sus restricciones.         |
+| `sql/dml/datos_prueba.sql`          | Carga los datos de prueba.                                                      |
+| `sql/ddl/triggers-consistencia.sql` | Crea los triggers de consistencia y activa la opción `READ_COMMITTED_SNAPSHOT`. |
 
-Los dos scripts están protegidos contra una segunda ejecución por error: el primero se detiene si la base ya existe, y el segundo, si alguna tabla ya tiene datos. En ambos casos avisan y no modifican nada. Además, fijan por sí mismos las opciones de sesión que necesitan, por lo que funcionan igual desde SSMS que desde la línea de comandos (`sqlcmd`).
+La instalación completa suma dos scripts de la Etapa 5 y sigue este orden:
+
+1. `sql/ddl/sistema-venta-libros.sql`
+2. `sql/dml/datos_prueba.sql`
+3. `calcular_descuento_pedido/script.sql`, que crea `fn_TotalPedido`
+4. `sql/ddl/triggers-consistencia.sql`
+5. `registrar_venta/script.sql`, que crea `fn_StockLibre` y los procedimientos de venta
+
+Los triggers no forman parte del primer script porque controlan el ciclo de vida de pedidos y pagos, y los datos de prueba se cargan con ese ciclo ya terminado: traen pedidos entregados y pagos aprobados. Por eso se instalan después de la carga. `fn_StockLibre` todavía no existe al crearlos, pero no es un problema: el motor resuelve el nombre al ejecutar el trigger.
+
+Los dos primeros scripts están protegidos contra una segunda ejecución por error: el primero se detiene si la base ya existe, y el segundo, si alguna tabla ya tiene datos. En ambos casos avisan y no modifican nada. El tercero se detiene sin cambios si falta `fn_TotalPedido` o si la base no tiene datos, y se puede repetir: elimina cada trigger y lo vuelve a crear. Además, los tres fijan por sí mismos las opciones de sesión que necesitan, por lo que funcionan igual desde SSMS que desde la línea de comandos (`sqlcmd`).
+
+**`READ_COMMITTED_SNAPSHOT`.** El script de triggers activa esta opción de la base si todavía no lo está. Se hace ahí y no en el DDL para que también llegue a una base ya creada. Hace falta porque un trigger `AFTER` lee después de escribir, al revés que los procedimientos, que primero bloquean y validan. Con el aislamiento por defecto, esas lecturas esperan las filas sin confirmar de otra sesión, y dos sesiones pueden bloquearse mutuamente. En una prueba de 8 sesiones y 320 ventas sobre publicaciones distintas hubo 168 interbloqueos sin la opción y ninguno con ella: las lecturas usan la última versión confirmada y no esperan, mientras que las escrituras y los bloqueos explícitos de los procedimientos se siguen serializando. La opción se activa con `WITH ROLLBACK IMMEDIATE`, que revierte las transacciones abiertas en otras conexiones de la base, así que conviene ejecutar el script sin actividad.
 
 ## 2. De la relación a la tabla
 
@@ -129,7 +142,7 @@ Los cuatro valores por defecto completan datos que el sistema ya conoce: el pedi
 
 ### 5.4 Lo que el esquema no controla
 
-Algunas reglas dependen de otras filas o de otras tablas; por ejemplo, que solo un cliente pueda hacer pedidos o que la cantidad pedida no supere el stock. Estas restricciones no alcanzan para expresarlas. Están listadas en [Modelo relacional](../etapa-02/modelo-relacional.md#5-reglas-que-el-esquema-no-garantiza) y se implementan en la Etapa 5.
+Algunas reglas dependen de otras filas o de otras tablas; por ejemplo, que solo un cliente pueda hacer pedidos o que la cantidad pedida no supere el stock. Estas restricciones no alcanzan para expresarlas. Están listadas en [Modelo relacional](../etapa-02/modelo-relacional.md#5-reglas-que-el-esquema-no-garantiza) y se controlan con los [triggers de consistencia](restricciones-integridad.md#6-triggers) y con los procedimientos de la Etapa 5.
 
 ## 6. Datos de prueba
 

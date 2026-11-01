@@ -89,8 +89,12 @@ El modelo de datos, las reglas de negocio y las consultas se explican en detalle
 
 3. Abrir [`sql/dml/datos_prueba.sql`](sql/dml/datos_prueba.sql) y ejecutarlo completo con <kbd>F5</kbd>. Carga los datos de prueba.
 
-4. Abrir [`calcular_descuento_pedido/script.sql`](sql/tecnico/procedimientos_funciones/calcular_descuento_pedido/script.sql) y ejecutarlo completo con <kbd>F5</kbd>. Después, hacer lo mismo con [`registrar_venta/script.sql`](sql/tecnico/procedimientos_funciones/registrar_venta/script.sql). Crean las funciones y los procedimientos de la Etapa 5, entre ellos `fn_StockLibre`, que necesitan las consultas de ofertas y de catálogo.
+4. Abrir [`calcular_descuento_pedido/script.sql`](sql/tecnico/procedimientos_funciones/calcular_descuento_pedido/script.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea las funciones de la Etapa 5 que calculan el total y el descuento de un pedido.
+
+5. Abrir [`sql/ddl/triggers-consistencia.sql`](sql/ddl/triggers-consistencia.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea los triggers del ciclo de venta y activa `READ_COMMITTED_SNAPSHOT` en la base.
+
+6. Abrir [`registrar_venta/script.sql`](sql/tecnico/procedimientos_funciones/registrar_venta/script.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea las funciones y los procedimientos de venta de la Etapa 5, entre ellos `fn_StockLibre`, que necesitan las consultas de ofertas y de catálogo.
 
 > [!NOTE]
-> - El orden importa: cada paso necesita lo que crea el anterior.
+> - El orden importa: cada paso necesita lo que crea el anterior. Los triggers van después de la precarga porque controlan el ciclo de pedidos y pagos, y los datos de prueba se cargan con ese ciclo ya terminado.
 > - Si la base ya existe, el paso 2 se detiene sin modificarla. Para reinstalar desde cero, hay que eliminarla antes.
