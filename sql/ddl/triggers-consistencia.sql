@@ -258,6 +258,187 @@ GO
 EXEC sp_settriggerorder @triggername = N'dbo.trg_PEDIDO_Transicion', @order = N'First', @stmttype = N'UPDATE';
 GO
 
+-- ----------------------------------------------------------------------------
+-- 2. Pagos y renglones
+--
+-- Protegen lo ya cobrado y el historial de pagos. Ningún procedimiento modifica
+-- renglones ni borra pagos: para cambiar un carrito se crea otro pedido.
+-- ----------------------------------------------------------------------------
+
+IF OBJECT_ID(N'dbo.trg_PAGO_Transicion', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_PAGO_Transicion;
+GO
+
+-- Protege el ciclo del pago y sus datos (RN22, RN24, RN25). usp_RegistrarVenta rechaza
+-- por su cuenta un pago ya procesado, porque lee el estado con el bloqueo tomado: este
+-- control cubre el DML directo. fecha_creacion queda libre porque la demostración la
+-- mueve para simular el tiempo. Un pago Cancelado puede tener fecha_pago: es el rastro
+-- de un cobro sin venta (RN37).
+CREATE TRIGGER dbo.trg_PAGO_Transicion
+ON dbo.PAGO
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN deleted AS D
+            ON D.pago_id = I.pago_id
+        WHERE I.pedido_id <> D.pedido_id
+           OR I.importe <> D.importe
+           OR I.pago_metodo_id <> D.pago_metodo_id
+    )
+        THROW 50221, 'trg_PAGO_Transicion: el pedido, el importe y el metodo de un pago no cambian (RN22).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN deleted AS D
+            ON D.pago_id = I.pago_id
+        INNER JOIN dbo.PAGO_ESTADO AS ANTERIOR
+            ON ANTERIOR.pago_estado_id = D.pago_estado_id
+        WHERE ANTERIOR.nombre <> 'Pendiente'
+          AND (
+                  I.pago_estado_id <> D.pago_estado_id
+               OR I.fecha_pago <> D.fecha_pago
+               OR (I.fecha_pago IS NULL AND D.fecha_pago IS NOT NULL)
+               OR (I.fecha_pago IS NOT NULL AND D.fecha_pago IS NULL)
+              )
+    )
+        THROW 50222, 'trg_PAGO_Transicion: un pago ya procesado no cambia (RN24, RN25).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.PAGO_ESTADO AS NUEVO
+            ON NUEVO.pago_estado_id = I.pago_estado_id
+        WHERE (NUEVO.nombre = 'Aprobado' AND I.fecha_pago IS NULL)
+           OR (NUEVO.nombre IN ('Pendiente', 'Rechazado') AND I.fecha_pago IS NOT NULL)
+    )
+        THROW 50223, 'trg_PAGO_Transicion: la fecha de pago no corresponde al estado del pago (RN25).', 1;
+END;
+GO
+
+-- Corre primero para rechazar antes de que trg_PAGO_ConfirmarPedido propague el cambio.
+EXEC sp_settriggerorder @triggername = N'dbo.trg_PAGO_Transicion', @order = N'First', @stmttype = N'UPDATE';
+GO
+
+IF OBJECT_ID(N'dbo.trg_DETALLE_Congelado', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_DETALLE_Congelado;
+GO
+
+-- Los renglones no cambian ni se borran: alterarían un total ya cobrado o el precio
+-- histórico, y un pedido podría quedarse sin renglones (RN15, RN17, RN22, RN26).
+CREATE TRIGGER dbo.trg_DETALLE_Congelado
+ON dbo.PEDIDO_DETALLE
+AFTER UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- El trigger también se dispara con una sentencia que no afecta filas.
+    IF NOT EXISTS (SELECT 1 FROM deleted)
+        RETURN;
+
+    THROW 50251, 'trg_DETALLE_Congelado: los renglones de un pedido no cambian ni se borran (RN15, RN17, RN22, RN26).', 1;
+END;
+GO
+
+IF OBJECT_ID(N'dbo.trg_PAGO_Alta', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_PAGO_Alta;
+GO
+
+-- Un pago nace Pendiente, por el total de un pedido Pendiente con la reserva vigente
+-- y sin otro pago abierto (RN22, RN24, RN35). usp_IniciarPago valida lo mismo antes de
+-- escribir, para respetar el orden de bloqueos: este control cubre el DML directo.
+-- El total de un pedido sin renglones es 0, así que su pago siempre se rechaza.
+CREATE TRIGGER dbo.trg_PAGO_Alta
+ON dbo.PAGO
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.PAGO_ESTADO AS PGE
+            ON PGE.pago_estado_id = I.pago_estado_id
+        WHERE PGE.nombre <> 'Pendiente'
+           OR I.fecha_pago IS NOT NULL
+    )
+        THROW 50231, 'trg_PAGO_Alta: un pago nace Pendiente y sin fecha de pago (RN24, RN25).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.PEDIDO AS P
+            ON P.pedido_id = I.pedido_id
+        INNER JOIN dbo.PEDIDO_ESTADO AS PE
+            ON PE.pedido_estado_id = P.pedido_estado_id
+        WHERE PE.nombre <> 'Pendiente'
+    )
+        THROW 50232, 'trg_PAGO_Alta: el pedido no esta Pendiente (RN24).', 1;
+
+    -- dbo.PAGO ya incluye las filas nuevas, así que también cuenta las de esta sentencia.
+    IF EXISTS (
+        SELECT 1
+        FROM dbo.PAGO AS PG
+        INNER JOIN dbo.PAGO_ESTADO AS PGE
+            ON PGE.pago_estado_id = PG.pago_estado_id
+        WHERE PG.pedido_id IN (SELECT pedido_id FROM inserted)
+          AND PGE.nombre IN ('Pendiente', 'Aprobado')
+        GROUP BY PG.pedido_id
+        HAVING COUNT(*) > 1
+    )
+        THROW 50233, 'trg_PAGO_Alta: el pedido ya tiene un pago pendiente o aprobado (RN24).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        WHERE I.importe <> dbo.fn_TotalPedido(I.pedido_id)
+    )
+        THROW 50234, 'trg_PAGO_Alta: el importe no coincide con el total del pedido (RN22).', 1;
+
+    -- Mismo plazo que dbo.fn_VencimientoReserva sin un pago Pendiente. No se usa esa
+    -- función porque aquí ya ve el pago nuevo como Pendiente y devolvería un plazo
+    -- nuevo: la reserva nunca vencería. Los controles anteriores aseguran que no hay
+    -- otro pago abierto.
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.PEDIDO AS P
+            ON P.pedido_id = I.pedido_id
+        WHERE I.fecha_creacion > DATEADD(MINUTE, 15, P.fecha_pedido)
+           OR P.fecha_pedido > I.fecha_creacion   -- fecha futura: no reserva
+    )
+        THROW 50235, 'trg_PAGO_Alta: la reserva del pedido vencio (RN35).', 1;
+END;
+GO
+
+IF OBJECT_ID(N'dbo.trg_PAGO_SinBorrado', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_PAGO_SinBorrado;
+GO
+
+-- Los pagos no se borran: un pedido confirmado se quedaría sin su pago, y se perdería
+-- el historial de intentos (RN29).
+CREATE TRIGGER dbo.trg_PAGO_SinBorrado
+ON dbo.PAGO
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- El trigger también se dispara con una sentencia que no afecta filas.
+    IF NOT EXISTS (SELECT 1 FROM deleted)
+        RETURN;
+
+    THROW 50241, 'trg_PAGO_SinBorrado: los pagos no se borran (RN29).', 1;
+END;
+GO
+
 -- Vuelve a habilitar la ejecución por si el control inicial la detuvo.
 SET NOEXEC OFF;
 GO

@@ -17,11 +17,14 @@ BEGIN
 END;
 GO
 
--- Sin este trigger, una venta no confirma el pedido ni descuenta el stock, y no da
--- error. Se crea en sql/ddl/triggers-consistencia.sql.
+-- Se crean en sql/ddl/triggers-consistencia.sql. Sin el primero, una venta no confirma
+-- el pedido ni descuenta el stock, y no da error. #LimpiarDemoVenta deshabilita los
+-- otros dos para poder borrar, y DISABLE TRIGGER falla si no existen.
 IF OBJECT_ID(N'dbo.trg_PAGO_ConfirmarPedido', N'TR') IS NULL
+   OR OBJECT_ID(N'dbo.trg_PAGO_SinBorrado', N'TR') IS NULL
+   OR OBJECT_ID(N'dbo.trg_DETALLE_Congelado', N'TR') IS NULL
 BEGIN
-    RAISERROR(N'Falta dbo.trg_PAGO_ConfirmarPedido: ejecutar antes sql/ddl/triggers-consistencia.sql. El script se detuvo sin realizar cambios.', 16, 1);
+    RAISERROR(N'Faltan triggers: ejecutar antes sql/ddl/triggers-consistencia.sql. El script se detuvo sin realizar cambios.', 16, 1);
     SET NOEXEC ON;
 END;
 GO
@@ -592,17 +595,26 @@ IF OBJECT_ID(N'tempdb..#EstadoDemoVenta', N'P') IS NOT NULL
 GO
 
 -- Borra lo que cuelga de los usuarios de demostración, en orden de dependencia.
+-- Pagos y renglones no se borran en la operación normal, así que sus triggers se
+-- deshabilitan solo para esta limpieza. DISABLE TRIGGER es transaccional: si algo
+-- falla, XACT_ABORT revierte todo y los triggers vuelven a quedar habilitados.
 CREATE PROCEDURE #LimpiarDemoVenta
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
     DECLARE @Usuarios TABLE (usuario_id INT PRIMARY KEY);
+
+    BEGIN TRANSACTION;
 
     INSERT INTO @Usuarios (usuario_id)
     SELECT usuario_id
     FROM dbo.USUARIO
     WHERE email LIKE 'demo.registrar.venta.%@example.com';
+
+    DISABLE TRIGGER dbo.trg_PAGO_SinBorrado ON dbo.PAGO;
+    DISABLE TRIGGER dbo.trg_DETALLE_Congelado ON dbo.PEDIDO_DETALLE;
 
     DELETE PG
     FROM dbo.PAGO AS PG
@@ -627,6 +639,11 @@ BEGIN
 
     DELETE FROM dbo.USUARIO
     WHERE usuario_id IN (SELECT usuario_id FROM @Usuarios);
+
+    ENABLE TRIGGER dbo.trg_DETALLE_Congelado ON dbo.PEDIDO_DETALLE;
+    ENABLE TRIGGER dbo.trg_PAGO_SinBorrado ON dbo.PAGO;
+
+    COMMIT TRANSACTION;
 END;
 GO
 

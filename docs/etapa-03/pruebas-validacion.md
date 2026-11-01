@@ -164,7 +164,7 @@ Estas pruebas ejercitan los [triggers](restricciones-integridad.md#6-triggers) c
 | Operación                                                                                                       | Resultado                                                        | Lo controla                 |
 | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------- |
 | Cancelar el pedido de un pago pendiente y aprobar ese pago                                                      | Rechazado (50201)                                                | `trg_PAGO_ConfirmarPedido`  |
-| Aprobar un pago rechazado de un pedido entregado                                                                | Rechazado (50201)                                                | `trg_PAGO_ConfirmarPedido`  |
+| Aprobar un pago rechazado de un pedido entregado                                                                | Rechazado (50222), no por `trg_PAGO_ConfirmarPedido`             | Orden de los triggers       |
 | Dejar sin stock las publicaciones de un pago pendiente y aprobarlo                                              | Rechazado (50202)                                                | `trg_PAGO_ConfirmarPedido`  |
 | Pasar a confirmado un pedido pendiente sin pago                                                                 | Rechazado (50216)                                                | `trg_PEDIDO_Transicion`     |
 | Lo mismo, con sus publicaciones sin stock                                                                       | Rechazado (50216), no por `chk_publicacion_stock`                | Orden de los triggers       |
@@ -179,8 +179,26 @@ Estas pruebas ejercitan los [triggers](restricciones-integridad.md#6-triggers) c
 | Cancelar un pedido pendiente                                                                                    | Aceptado: stock sin cambios                                      | `trg_PEDIDO_Transicion`     |
 | Pasar un pedido de confirmado a entregado                                                                       | Aceptado: stock sin cambios                                      | `trg_PEDIDO_Transicion`     |
 | Mover la fecha de un pedido                                                                                     | Aceptado                                                         | `trg_PEDIDO_Transicion`     |
+| Aprobar un pago pendiente sin fecha de acreditación                                                             | Rechazado (50223)                                                | `trg_PAGO_Transicion`       |
+| Rechazar un pago pendiente con fecha, y poner fecha a un pago que sigue pendiente                               | Rechazado (50223), cada uno                                      | `trg_PAGO_Transicion`       |
+| Pasar un pago aprobado a rechazado                                                                              | Rechazado (50222)                                                | `trg_PAGO_Transicion`       |
+| Cambiar o quitar la fecha de un pago aprobado                                                                   | Rechazado (50222), cada uno                                      | `trg_PAGO_Transicion`       |
+| Cambiar el importe, el pedido o el método de un pago                                                            | Rechazado (50221), cada uno                                      | `trg_PAGO_Transicion`       |
+| Pasar un pago pendiente a rechazado sin fecha, y otro a cancelado con fecha                                     | Aceptado, cada uno                                               | `trg_PAGO_Transicion`       |
+| Mover la fecha de creación de un pago pendiente                                                                 | Aceptado                                                         | `trg_PAGO_Transicion`       |
+| Cambiar el precio unitario o la cantidad de un renglón, y borrar un renglón                                     | Rechazado (50251), cada uno                                      | `trg_DETALLE_Congelado`     |
+| Dar de alta un pago aprobado, y uno pendiente con fecha                                                         | Rechazado (50231), cada uno                                      | `trg_PAGO_Alta`             |
+| Dar de alta un pago sobre un pedido confirmado                                                                  | Rechazado (50232)                                                | `trg_PAGO_Alta`             |
+| Dar de alta un segundo pago con uno pendiente, y dos pagos en una sentencia sobre un pedido sin pagos           | Rechazado (50233), cada uno                                      | `trg_PAGO_Alta`             |
+| Dar de alta un pago con importe distinto del total, y uno sobre un pedido sin renglones                         | Rechazado (50234), cada uno                                      | `trg_PAGO_Alta`             |
+| Dar de alta un pago con la reserva vencida, y uno sobre un pedido con fecha futura                              | Rechazado (50235), cada uno                                      | `trg_PAGO_Alta`             |
+| Dar de alta un pago con la reserva vigente                                                                      | Aceptado                                                         | `trg_PAGO_Alta`             |
+| Borrar un pago                                                                                                  | Rechazado (50241)                                                | `trg_PAGO_SinBorrado`       |
+| Borrar sin afectar ninguna fila, en pagos y en renglones                                                        | Aceptado                                                         | Triggers de borrado         |
 
-Los 26 casos dieron el resultado esperado. Para comprobar que la prueba del orden no pasaba por casualidad, se invirtió el orden de los triggers de PEDIDO: el caso falló con el error 547, como se esperaba, y volvió a pasar al repetir el script.
+Los 53 casos dieron el resultado esperado. Para comprobar que las pruebas del orden no pasaban por casualidad, se invirtió el orden de los triggers de cada tabla. En PEDIDO, el caso falló con el error 547, y en PAGO, con el 50201, como se esperaba. Ambos volvieron a pasar al restaurar el orden.
+
+**Altas simultáneas.** Se lanzaron dos `INSERT` directos sobre el mismo pedido desde sesiones distintas, cada una con su transacción abierta. Los dos se aceptaron y el pedido quedó con dos pagos pendientes: `trg_PAGO_Alta` no ve la fila sin confirmar de la otra sesión. Por el procedimiento, el mismo caso da un solo pago, como muestran las [pruebas de concurrencia](../../sql/tecnico/procedimientos_funciones/registrar_venta/evidencias/concurrencia.md). Es un límite conocido, descrito en [Restricciones de integridad](restricciones-integridad.md#6-triggers).
 
 **Datos cargados.** Los triggers revisan solo las filas que cambian, así que los datos de prueba se comprobaron con consultas. Ninguna encontró casos:
 
@@ -189,10 +207,15 @@ Los 26 casos dieron el resultado esperado. Para comprobar que la prueba del orde
 | RN19       | Pagos aprobados con el pedido fuera de confirmado o entregado. |
 | RN19       | Pedidos confirmados o entregados sin pago aprobado.            |
 | RN12, RN14 | Publicaciones sin stock que figuran como disponibles.          |
+| RN25       | Pagos aprobados sin fecha de acreditación.                     |
+| RN25       | Pagos pendientes o rechazados con fecha de acreditación.       |
+| RN22       | Pagos con un importe distinto del total del pedido.            |
+| RN24       | Pedidos con más de un pago pendiente o aprobado.               |
+| RN15       | Pedidos sin renglones.                                         |
 
-**Instalación.** Con los triggers instalados después de la carga, `datos_prueba.sql` sigue cargando sus filas sin cambios. El script de triggers se detiene sin crear nada si la base no tiene datos o falta `fn_TotalPedido`, y `registrar_venta/script.sql` se detiene si falta `trg_PAGO_ConfirmarPedido`. Repetir el script de triggers los reemplaza y conserva el orden.
+**Instalación.** Con los triggers instalados después de la carga, `datos_prueba.sql` sigue cargando sus filas sin cambios. El script de triggers se detiene sin crear nada si la base no tiene datos o falta `fn_TotalPedido`, y `registrar_venta/script.sql` se detiene si falta `trg_PAGO_ConfirmarPedido`, `trg_PAGO_SinBorrado` o `trg_DETALLE_Congelado`. Repetir el script de triggers los reemplaza y conserva el orden.
 
-**Flujo completo.** Con los triggers activos, la demostración de `registrar_venta/script.sql` dio 47 de 47 comprobaciones, sin dejar filas. Las [pruebas de concurrencia](../../sql/tecnico/procedimientos_funciones/registrar_venta/evidencias/concurrencia.md) dieron los cinco casos correctos y ningún interbloqueo.
+**Flujo completo.** Con los triggers activos, la demostración de `registrar_venta/script.sql` dio 47 de 47 comprobaciones en dos ejecuciones seguidas, sin dejar filas ni triggers deshabilitados. La secuencia de la limpieza, con un error provocado después de deshabilitar los triggers, también los dejó habilitados. Las [pruebas de concurrencia](../../sql/tecnico/procedimientos_funciones/registrar_venta/evidencias/concurrencia.md) dieron los cinco casos correctos y ningún interbloqueo.
 
 ## 8. Alcance de las pruebas
 

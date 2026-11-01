@@ -91,7 +91,7 @@ El modelo de datos, las reglas de negocio y las consultas se explican en detalle
 
 4. Abrir [`calcular_descuento_pedido/script.sql`](sql/tecnico/procedimientos_funciones/calcular_descuento_pedido/script.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea las funciones de la Etapa 5 que calculan el total y el descuento de un pedido.
 
-5. Abrir [`sql/ddl/triggers-consistencia.sql`](sql/ddl/triggers-consistencia.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea los triggers del ciclo de venta y activa `READ_COMMITTED_SNAPSHOT` en la base.
+5. Abrir [`sql/ddl/triggers-consistencia.sql`](sql/ddl/triggers-consistencia.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea los triggers de consistencia y activa `READ_COMMITTED_SNAPSHOT` en la base.
 
 6. Abrir [`registrar_venta/script.sql`](sql/tecnico/procedimientos_funciones/registrar_venta/script.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea las funciones y los procedimientos de venta de la Etapa 5, entre ellos `fn_StockLibre`, que necesitan las consultas de ofertas y de catálogo.
 

@@ -1,6 +1,6 @@
 # Pruebas de concurrencia de `registrar_venta/script.sql`
 
-- **Fecha:** 2026-11-01 10:16
+- **Fecha:** 2026-11-01 10:31
 - **Base temporal:** `tmp_validacion_rv`, recién cargada con el DDL y los datos de prueba
 - **Servidor:** Microsoft SQL Server 2025 (RTM) Express Edition (64-bit)
 - **Método:** sesiones `sqlcmd` en paralelo, con las llamadas sincronizadas por `WAITFOR`. En A, B y C una sesión retiene la fila disputada durante 3 segundos.
@@ -16,7 +16,7 @@
 
 ## Caso B: pagos simultáneos del mismo pedido
 
-- **Preparación:** pedido Pendiente vigente 617; 8 sesiones bloqueadas a la espera de la fila
+- **Preparación:** pedido Pendiente vigente 631; 8 sesiones bloqueadas a la espera de la fila
 - **Llamadas:** 8 `usp_IniciarPago`
 - **Esperado:** 1 pago, 7 errores 50113
 - **Obtenido:** 1 pago, 7 errores 50113
@@ -25,7 +25,7 @@
 
 ## Caso C: aprobaciones simultáneas del mismo pago
 
-- **Preparación:** pago Pendiente 731 por 2 unidades, stock 10; 8 sesiones bloqueadas a la espera de la fila
+- **Preparación:** pago Pendiente 751 por 2 unidades, stock 10; 8 sesiones bloqueadas a la espera de la fila
 - **Llamadas:** 8 `usp_RegistrarVenta` Aprobado
 - **Esperado:** 1 venta, 7 errores 50123, pedido Confirmado, stock 8
 - **Obtenido:** 1 venta, 7 errores 50123, pedido Confirmado, stock 8
