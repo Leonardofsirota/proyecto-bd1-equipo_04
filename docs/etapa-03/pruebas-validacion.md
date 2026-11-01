@@ -195,8 +195,28 @@ Estas pruebas ejercitan los [triggers](restricciones-integridad.md#6-triggers) c
 | Dar de alta un pago con la reserva vigente                                                                      | Aceptado                                                         | `trg_PAGO_Alta`             |
 | Borrar un pago                                                                                                  | Rechazado (50241)                                                | `trg_PAGO_SinBorrado`       |
 | Borrar sin afectar ninguna fila, en pagos y en renglones                                                        | Aceptado                                                         | Triggers de borrado         |
+| Cambiar el libro, la condición o el vendedor de una publicación con renglones                                   | Rechazado (50274), cada uno                                      | `trg_PUBLICACION_Historial` |
+| Revertir la baja de una publicación                                                                             | Rechazado (50275)                                                | `trg_PUBLICACION_Historial` |
+| Cambiar el precio y el stock de una publicación vendida                                                         | Aceptado                                                         | `trg_PUBLICACION_Historial` |
+| Dar de baja una publicación, y cambiar el libro de una publicación sin renglones                                | Aceptado, cada uno                                               | `trg_PUBLICACION_Historial` |
+| Dar de alta un pedido entregado                                                                                 | Rechazado (50211)                                                | `trg_PEDIDO_Alta`           |
+| Dar de alta un pedido de un vendedor, y uno de un cliente dado de baja                                          | Rechazado (50212), cada uno                                      | `trg_PEDIDO_Alta`           |
+| Dar de alta un pedido con una dirección inventada, y uno con la dirección de otro cliente                       | Rechazado (50213), cada uno                                      | `trg_PEDIDO_Alta`           |
+| Dar de alta un pedido con piso o departamento que la dirección no tiene, y uno sin el piso que sí tiene         | Rechazado (50213), cada uno                                      | `trg_PEDIDO_Alta`           |
+| Dar de alta dos pedidos en una sentencia, uno de ellos con una dirección inventada                              | Rechazado (50213)                                                | `trg_PEDIDO_Alta`           |
+| Dar de alta pedidos con la dirección del cliente, con piso y sin piso                                           | Aceptado, cada uno                                               | `trg_PEDIDO_Alta`           |
+| Editar una dirección de un cliente con pedidos                                                                  | Aceptado: el pedido conserva su copia                            | `trg_PEDIDO_Alta`           |
+| Publicar con un cliente, y pasarle a un cliente una publicación sin renglones                                   | Rechazado (50271), cada uno                                      | `trg_PUBLICACION_Vendedor`  |
+| Publicar un libro sin autor, y pasar a ese libro una publicación sin renglones                                  | Rechazado (50272), cada uno                                      | `trg_PUBLICACION_Vendedor`  |
+| Publicar con un vendedor dado de baja, y pasarle una publicación sin renglones                                  | Rechazado (50273), cada uno                                      | `trg_PUBLICACION_Vendedor`  |
+| Dar de alta una publicación de un vendedor activo                                                               | Aceptado: queda disponible                                       | `trg_PUBLICACION_Vendedor`  |
+| Pausar y reanudar una publicación                                                                               | Aceptado                                                         | `trg_PUBLICACION_Vendedor`  |
+| Agotar una publicación de un vendedor dado de baja                                                              | Aceptado: queda no disponible                                    | `trg_PUBLICACION_Vendedor`  |
+| Cambiar el rol de un cliente con pedidos, y el de un vendedor con publicaciones                                 | Rechazado (50281), cada uno                                      | `trg_USUARIO_CambioRol`     |
+| Cambiar el rol de un usuario sin pedidos ni publicaciones                                                       | Aceptado                                                         | `trg_USUARIO_CambioRol`     |
+| Reasignar el mismo rol a un cliente con pedidos                                                                 | Aceptado                                                         | `trg_USUARIO_CambioRol`     |
 
-Los 53 casos dieron el resultado esperado. Para comprobar que las pruebas del orden no pasaban por casualidad, se invirtió el orden de los triggers de cada tabla. En PEDIDO, el caso falló con el error 547, y en PAGO, con el 50201, como se esperaba. Ambos volvieron a pasar al restaurar el orden.
+Los 84 casos dieron el resultado esperado. Para comprobar que las pruebas del orden no pasaban por casualidad, se invirtió el orden de los triggers de cada tabla. En PEDIDO, el caso falló con el error 547, y en PAGO, con el 50201, como se esperaba. Ambos volvieron a pasar al restaurar el orden. De la misma forma, al quitar de `trg_PUBLICACION_Vendedor` la condición `disponible = 1`, agotar una publicación de un vendedor dado de baja falló con el error 50273, y volvió a pasar al restaurarla.
 
 **Altas simultáneas.** Se lanzaron dos `INSERT` directos sobre el mismo pedido desde sesiones distintas, cada una con su transacción abierta. Los dos se aceptaron y el pedido quedó con dos pagos pendientes: `trg_PAGO_Alta` no ve la fila sin confirmar de la otra sesión. Por el procedimiento, el mismo caso da un solo pago, como muestran las [pruebas de concurrencia](../../sql/tecnico/procedimientos_funciones/registrar_venta/evidencias/concurrencia.md). Es un límite conocido, descrito en [Restricciones de integridad](restricciones-integridad.md#6-triggers).
 
@@ -212,6 +232,10 @@ Los 53 casos dieron el resultado esperado. Para comprobar que las pruebas del or
 | RN22       | Pagos con un importe distinto del total del pedido.            |
 | RN24       | Pedidos con más de un pago pendiente o aprobado.               |
 | RN15       | Pedidos sin renglones.                                         |
+| RN10       | Publicaciones de un usuario sin rol de vendedor.               |
+| RN08       | Publicaciones de un libro sin autor.                           |
+| RN04       | Pedidos de un usuario sin rol de cliente.                      |
+| RN18       | Pedidos cuya dirección no coincide con una del cliente.        |
 
 **Instalación.** Con los triggers instalados después de la carga, `datos_prueba.sql` sigue cargando sus filas sin cambios. El script de triggers se detiene sin crear nada si la base no tiene datos o falta `fn_TotalPedido`, y `registrar_venta/script.sql` se detiene si falta `trg_PAGO_ConfirmarPedido`, `trg_PAGO_SinBorrado` o `trg_DETALLE_Congelado`. Repetir el script de triggers los reemplaza y conserva el orden.
 

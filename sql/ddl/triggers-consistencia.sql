@@ -439,6 +439,203 @@ BEGIN
 END;
 GO
 
+-- ----------------------------------------------------------------------------
+-- 3. Altas e historial
+--
+-- Cubren las altas hechas fuera de los procedimientos y evitan reescribir ventas
+-- pasadas. RN08 y RN15 no se pueden exigir en el alta, porque la fila padre debe
+-- existir primero. En su lugar, se impide usar esa fila: un libro sin autor no se
+-- publica (50272), y un pedido sin renglones no se paga (50234, en trg_PAGO_Alta).
+-- ----------------------------------------------------------------------------
+
+IF OBJECT_ID(N'dbo.trg_PUBLICACION_Historial', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_PUBLICACION_Historial;
+GO
+
+-- Una publicación con renglones conserva su vendedor, su libro y su condición:
+-- cambiarlos reescribiría comprobantes y reportes de ventas pasadas. Una baja no se
+-- revierte (RN28). El precio y el stock quedan libres: cada renglón guarda su precio.
+CREATE TRIGGER dbo.trg_PUBLICACION_Historial
+ON dbo.PUBLICACION
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT (UPDATE(usuario_id) OR UPDATE(libro_id) OR UPDATE(condicion_id) OR UPDATE(fecha_eliminacion))
+        RETURN;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN deleted AS D
+            ON D.publicacion_id = I.publicacion_id
+        WHERE (
+                  I.usuario_id <> D.usuario_id
+               OR I.libro_id <> D.libro_id
+               OR I.condicion_id <> D.condicion_id
+              )
+          AND EXISTS (
+                  SELECT 1
+                  FROM dbo.PEDIDO_DETALLE AS PD
+                  WHERE PD.publicacion_id = I.publicacion_id
+              )
+    )
+        THROW 50274, 'trg_PUBLICACION_Historial: una publicacion con pedidos no cambia de vendedor, libro ni condicion (RN28).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN deleted AS D
+            ON D.publicacion_id = I.publicacion_id
+        WHERE I.fecha_eliminacion IS NULL
+          AND D.fecha_eliminacion IS NOT NULL
+    )
+        THROW 50275, 'trg_PUBLICACION_Historial: la baja de una publicacion no se revierte (RN28).', 1;
+END;
+GO
+
+IF OBJECT_ID(N'dbo.trg_PEDIDO_Alta', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_PEDIDO_Alta;
+GO
+
+-- Un pedido nace Pendiente, de un cliente activo y con la copia de una de sus
+-- direcciones (RN04, RN18, RN19, RN28). usp_CrearPedido valida al cliente y la dirección
+-- antes de abrir la transacción, con @DireccionId. Este control solo ve la copia y
+-- cubre el DML directo. Revisa únicamente el alta: después, el cliente puede editar o
+-- borrar esa dirección, y el pedido conserva su copia (RN27).
+CREATE TRIGGER dbo.trg_PEDIDO_Alta
+ON dbo.PEDIDO
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.PEDIDO_ESTADO AS PE
+            ON PE.pedido_estado_id = I.pedido_estado_id
+        WHERE PE.nombre <> 'Pendiente'
+    )
+        THROW 50211, 'trg_PEDIDO_Alta: un pedido nace Pendiente (RN19).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.USUARIO AS U
+            ON U.usuario_id = I.usuario_id
+        INNER JOIN dbo.USUARIO_ROL AS UR
+            ON UR.usuario_rol_id = U.usuario_rol_id
+        WHERE UR.nombre <> 'Cliente'
+           OR U.fecha_eliminacion IS NOT NULL
+    )
+        THROW 50212, 'trg_PEDIDO_Alta: el usuario no es un cliente activo (RN04, RN28).', 1;
+
+    -- Los CHECK no admiten texto vacío en piso ni departamento, así que COALESCE no
+    -- confunde NULL con un valor.
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        WHERE NOT EXISTS (
+                  SELECT 1
+                  FROM dbo.DIRECCION AS D
+                  WHERE D.usuario_id = I.usuario_id
+                    AND D.ciudad_id = I.ciudad_id
+                    AND D.calle = I.envio_calle
+                    AND D.altura = I.envio_altura
+                    AND D.codigo_postal = I.envio_codigo_postal
+                    AND COALESCE(D.piso, '') = COALESCE(I.envio_piso, '')
+                    AND COALESCE(D.departamento, '') = COALESCE(I.envio_departamento, '')
+              )
+    )
+        THROW 50213, 'trg_PEDIDO_Alta: la direccion no coincide con una del cliente (RN18).', 1;
+END;
+GO
+
+IF OBJECT_ID(N'dbo.trg_PUBLICACION_Vendedor', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_PUBLICACION_Vendedor;
+GO
+
+-- Solo un vendedor publica, y solo libros con autor (RN08, RN10). Una publicación
+-- disponible necesita un vendedor activo (RN12). Esa condición exige disponible = 1
+-- porque retirar una publicación de un vendedor dado de baja sí es válido: lo hace
+-- trg_PUBLICACION_Agotada, que dispara este trigger con disponible = 0.
+CREATE TRIGGER dbo.trg_PUBLICACION_Vendedor
+ON dbo.PUBLICACION
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT (UPDATE(usuario_id) OR UPDATE(libro_id) OR UPDATE(disponible))
+        RETURN;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.USUARIO AS U
+            ON U.usuario_id = I.usuario_id
+        INNER JOIN dbo.USUARIO_ROL AS UR
+            ON UR.usuario_rol_id = U.usuario_rol_id
+        WHERE UR.nombre <> 'Vendedor'
+    )
+        THROW 50271, 'trg_PUBLICACION_Vendedor: solo un vendedor puede publicar (RN10).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        WHERE NOT EXISTS (
+                  SELECT 1
+                  FROM dbo.AUTOR_LIBRO AS AL
+                  WHERE AL.libro_id = I.libro_id
+              )
+    )
+        THROW 50272, 'trg_PUBLICACION_Vendedor: el libro no tiene autor (RN08).', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN dbo.USUARIO AS U
+            ON U.usuario_id = I.usuario_id
+        WHERE I.disponible = 1
+          AND U.fecha_eliminacion IS NOT NULL
+    )
+        THROW 50273, 'trg_PUBLICACION_Vendedor: el vendedor esta dado de baja (RN12).', 1;
+END;
+GO
+
+IF OBJECT_ID(N'dbo.trg_USUARIO_CambioRol', N'TR') IS NOT NULL
+    DROP TRIGGER dbo.trg_USUARIO_CambioRol;
+GO
+
+-- Un usuario con pedidos o publicaciones conserva su rol: si no, quedarían pedidos de
+-- alguien que no es cliente o publicaciones de alguien que no es vendedor (RN04, RN10).
+CREATE TRIGGER dbo.trg_USUARIO_CambioRol
+ON dbo.USUARIO
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT UPDATE(usuario_rol_id)
+        RETURN;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS I
+        INNER JOIN deleted AS D
+            ON D.usuario_id = I.usuario_id
+        WHERE I.usuario_rol_id <> D.usuario_rol_id
+          AND (
+                  EXISTS (SELECT 1 FROM dbo.PEDIDO AS P WHERE P.usuario_id = I.usuario_id)
+               OR EXISTS (SELECT 1 FROM dbo.PUBLICACION AS PUB WHERE PUB.usuario_id = I.usuario_id)
+              )
+    )
+        THROW 50281, 'trg_USUARIO_CambioRol: un usuario con pedidos o publicaciones no cambia de rol (RN04, RN10).', 1;
+END;
+GO
+
 -- Vuelve a habilitar la ejecución por si el control inicial la detuvo.
 SET NOEXEC OFF;
 GO

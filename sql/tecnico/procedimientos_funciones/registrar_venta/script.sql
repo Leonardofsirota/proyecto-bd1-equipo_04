@@ -760,7 +760,8 @@ DECLARE @Error INT;
 DECLARE @Abiertas INT = 0;
 
 BEGIN TRY
-    -- Datos propios: dos clientes con dirección, un vendedor activo y uno dado de baja
+    -- Datos propios: dos clientes con dirección y dos vendedores. El segundo se da de
+    -- baja en el caso 10, después de publicar: un vendedor dado de baja no puede hacerlo
     INSERT INTO dbo.USUARIO
     (
         nombre,
@@ -770,7 +771,6 @@ BEGIN TRY
         telefono,
         fecha_nacimiento,
         password_hash,
-        fecha_eliminacion,
         usuario_rol_id
     )
     SELECT
@@ -781,16 +781,15 @@ BEGIN TRY
         '3794000000',
         '1990-01-01',
         'hash-demo',
-        D.fecha_eliminacion,
         UR.usuario_rol_id
     FROM
     (
         VALUES
-            ('Cliente A', '99000001', 'demo.registrar.venta.1@example.com', 'Cliente', NULL),
-            ('Cliente B', '99000002', 'demo.registrar.venta.2@example.com', 'Cliente', NULL),
-            ('Vendedor', '99000003', 'demo.registrar.venta.3@example.com', 'Vendedor', NULL),
-            ('Vendedor baja', '99000004', 'demo.registrar.venta.4@example.com', 'Vendedor', GETDATE())
-    ) AS D (nombre, dni, email, rol, fecha_eliminacion)
+            ('Cliente A', '99000001', 'demo.registrar.venta.1@example.com', 'Cliente'),
+            ('Cliente B', '99000002', 'demo.registrar.venta.2@example.com', 'Cliente'),
+            ('Vendedor', '99000003', 'demo.registrar.venta.3@example.com', 'Vendedor'),
+            ('Vendedor baja', '99000004', 'demo.registrar.venta.4@example.com', 'Vendedor')
+    ) AS D (nombre, dni, email, rol)
     INNER JOIN dbo.USUARIO_ROL AS UR
         ON UR.nombre = D.rol;
 
@@ -1325,6 +1324,10 @@ BEGIN TRY
     PRINT 'Caso 10: validaciones';
 
     EXEC #CrearPublicacionDemo @Vendedor = @VendedorBaja, @Stock = 1, @PublicacionId = @PubBaja OUTPUT;
+
+    UPDATE dbo.USUARIO
+    SET fecha_eliminacion = GETDATE()
+    WHERE usuario_id = @VendedorBaja;
 
     -- Error 50101: el usuario no es cliente
     SET @Error = NULL;
