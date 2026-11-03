@@ -49,7 +49,7 @@ Se usa _pedido_ para referirse a la compra que realiza un cliente.
 | ID   | Regla             | Descripción                                                                                                                                                                            |
 | ---- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | RN21 | Métodos admitidos | Los métodos de pago son tarjeta de débito, tarjeta de crédito y transferencia.                                                                                                         |
-| RN22 | Pago completo     | Cada pago se realiza en línea, corresponde a un solo pedido y cubre su total con un único método. No se admiten cuotas ni pagos combinados.                                            |
+| RN22 | Pago completo     | Cada pago se realiza en línea, corresponde a un solo pedido y cubre su total menos el descuento (RN32) con un único método. No se admiten cuotas ni pagos combinados.                  |
 | RN23 | Estados del pago  | Un pago puede estar pendiente, aprobado, rechazado o cancelado.                                                                                                                        |
 | RN24 | Reintentos        | Solo se registra un nuevo intento si el anterior fue rechazado o cancelado. Un pedido tiene a lo sumo un pago aprobado.                                                                |
 | RN25 | Fechas del pago   | Cada pago registra su fecha de inicio. La fecha de acreditación se registra al aprobarse y no puede ser anterior a la de inicio. Un cobro que no concreta la venta la conserva (RN37). |
@@ -65,11 +65,11 @@ Se usa _pedido_ para referirse a la compra que realiza un cliente.
 
 ## 7. Descuentos
 
-| ID   | Regla                 | Descripción                                                                                                                                                                                                                                                             |
-| ---- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| RN30 | Descuento por volumen | Cada pedido tiene un porcentaje de descuento según su total: 0 % hasta 100.000, 5 % hasta 200.000 y 10 % por encima de ese monto. Cada límite pertenece al tramo que termina en él: un pedido de exactamente 100.000 tiene 0 %. Un pedido cancelado no tiene descuento. |
-| RN31 | Importe del descuento | El importe del descuento es el porcentaje aplicado sobre el total del pedido, redondeado a dos decimales.                                                                                                                                                               |
-| RN32 | Descuento informativo | El descuento se calcula al consultarlo y no se almacena. Es informativo: no reduce el total del pedido (RN17) ni el importe de sus pagos (RN22).                                                                                                                        |
+| ID   | Regla                 | Descripción                                                                                                                                                                                                                                                               |
+| ---- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RN30 | Descuento por volumen | Cada pedido tiene un porcentaje de descuento según su total: 0 % hasta 100.000, 5 % hasta 200.000 y 10 % por encima de ese monto. Cada límite pertenece al tramo que termina en él: un pedido de exactamente 100.000 tiene 0 %. Un pedido cancelado no tiene descuento.   |
+| RN31 | Importe del descuento | El importe del descuento es el porcentaje aplicado sobre el total del pedido, redondeado a dos decimales.                                                                                                                                                                 |
+| RN32 | Descuento en el cobro | El descuento se calcula a partir del total y no se almacena. No modifica el total del pedido (RN17), pero reduce el importe cobrado: cada pago se registra por el total menos el importe del descuento (RN22) y conserva ese importe aunque el pedido se cancele después. |
 
 ## 8. Reservas de stock
 

@@ -46,13 +46,13 @@ Tres decisiones protegen el historial de las ventas:
 - **Dirección copiada.** El pedido guarda una copia de la dirección de entrega, en lugar de referenciar una dirección del cliente. Así la conserva aunque el cliente la edite o la elimine (RN27). Solo la ciudad se referencia, porque pertenece a un catálogo que el cliente no modifica.
 - **Total calculado.** El total del pedido no se almacena: se calcula a partir del detalle (RN17). De este modo no puede quedar inconsistente con los renglones.
 
-El descuento sigue el mismo criterio: su porcentaje y su importe se derivan del total, así que tampoco se almacenan. Además, es informativo y no cambia lo que se cobra (RN30 a RN32).
+El descuento sigue el mismo criterio: su porcentaje y su importe se derivan del total, así que tampoco se almacenan. No modifica el total del pedido, pero reduce el importe cobrado: cada pago se registra por el total menos el descuento (RN30 a RN32).
 
 ## 6. Pagos
 
 Cada pago es un intento de cobro de un pedido. Un pedido puede tener varios: si un intento es rechazado o cancelado, se registra uno nuevo y el anterior se conserva como historial (RN24, RN29). Cada intento usa un único método de pago y tiene un estado (RN21 a RN23).
 
-El pago guarda su propio importe aunque el total del pedido pueda calcularse. Funciona como constancia del monto procesado en ese intento.
+El pago guarda su propio importe aunque pueda calcularse a partir del total del pedido y su descuento. Funciona como constancia del monto procesado en ese intento, y se conserva aunque el pedido se cancele después, cuando ya no tiene descuento (RN30, RN32).
 
 Además, registra dos fechas con significados distintos (RN25):
 

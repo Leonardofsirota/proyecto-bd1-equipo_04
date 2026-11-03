@@ -35,7 +35,7 @@ El sistema funciona como un marketplace de libros: distintos vendedores publican
 - Compras que reúnan libros de uno o varios vendedores.
 - Conservación del precio unitario de cada libro al momento de la compra.
 - Cálculo del total de cada compra a partir de su detalle.
-- Cálculo informativo del porcentaje y del importe de descuento según el total de cada compra, sin modificar ese total ni lo que se paga.
+- Cálculo del porcentaje y del importe de descuento según el total de cada compra. El descuento no modifica ese total, pero reduce el importe cobrado: el pago se registra por el total menos el descuento.
 - Registro de la dirección de entrega tal como estaba al momento de la compra.
 - Manejo de los estados de las ventas: pendiente, confirmada, entregada y cancelada.
 
