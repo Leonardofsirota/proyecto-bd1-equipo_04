@@ -1,11 +1,19 @@
 ﻿/* Libros más vendidos: unidades vendidas y monto recaudado por libro en los
-   pedidos con pago aprobado, solo para los libros con al menos 3 unidades vendidas. */
+   pedidos con pago aprobado, solo para los libros con al menos 3 unidades vendidas.
+
+   El monto recaudado es lo cobrado, con el descuento del pedido (RN32): a cada
+   renglón se le resta su parte, calculada por dbo.fn_DescuentoRenglon
+   (calcular_descuento_pedido/script.sql, Etapa 5). */
 
 SELECT
     L.libro_id,
     L.titulo,
     SUM(PD.cantidad) AS unidades_vendidas,
-    SUM(PD.cantidad * PD.precio_unitario) AS total_recaudado
+    -- Subtotal del renglón menos su parte del descuento del pedido.
+    SUM(
+        PD.cantidad * PD.precio_unitario
+        - dbo.fn_DescuentoRenglon(PD.pedido_detalle_id)
+    ) AS total_recaudado
 FROM dbo.LIBRO AS L
 INNER JOIN dbo.PUBLICACION AS PUB
     ON L.libro_id = PUB.libro_id

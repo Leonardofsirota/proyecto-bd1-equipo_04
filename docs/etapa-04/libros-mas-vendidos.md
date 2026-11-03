@@ -15,7 +15,7 @@ Lista los libros con al menos 3 unidades vendidas, con el total de unidades y el
 
 - **Uniones:** va del libro a sus publicaciones y de cada publicación a los renglones en que se vendió.
 - **Ventas:** un `EXISTS` deja solo los renglones de pedidos con pago aprobado.
-- **Agrupación:** `GROUP BY` por libro; `SUM` acumula las unidades y la cantidad × precio unitario de cada renglón.
+- **Agrupación:** `GROUP BY` por libro; `SUM` acumula las unidades y lo cobrado por cada renglón: la cantidad × precio unitario menos su parte del descuento del pedido (RN32). Esa parte la calcula `dbo.fn_DescuentoRenglon`, como en [Total de ventas por vendedor](total-ventas-por-vendedor.md), y se crea en [`calcular_descuento_pedido/script.sql`](../../sql/tecnico/procedimientos_funciones/calcular_descuento_pedido/script.sql), de la Etapa 5, que debe ejecutarse antes que esta consulta.
 - **Mínimo de unidades:** `HAVING SUM(cantidad) >= 3`. Va en el `HAVING` y no en el `WHERE` porque filtra por un valor que recién existe después de agrupar.
 - **Orden:** por unidades vendidas; a igual cantidad, por monto recaudado.
 
@@ -25,6 +25,6 @@ Devuelve 113 libros. Los tres primeros son:
 
 | Libro                                   | Unidades |  Recaudado |
 | --------------------------------------- | -------: | ---------: |
-| Harry Potter y el prisionero de Azkaban |       65 | $1.795.800 |
-| La metamorfosis                         |       63 | $1.031.100 |
-| El hobbit                               |       62 | $1.265.900 |
+| Harry Potter y el prisionero de Azkaban |       65 | $1.751.035 |
+| La metamorfosis                         |       63 | $1.016.055 |
+| El hobbit                               |       62 | $1.249.685 |

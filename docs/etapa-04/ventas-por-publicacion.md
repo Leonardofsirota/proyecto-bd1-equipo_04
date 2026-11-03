@@ -16,7 +16,7 @@ El **Vendedor**, para saber qué publicaciones le rinden más. Muestra solo sus 
 - **Uniones:** une la publicación con su libro, su condición y los renglones en que se vendió.
 - **Ventas:** un `EXISTS` deja solo los renglones de pedidos con un pago aprobado dentro del período.
 - **Publicaciones pausadas o dadas de baja:** no se filtran, porque sus ventas siguen contando (RN28).
-- **Agrupación:** `GROUP BY` por publicación. `COUNT(*)` cuenta los renglones: como una publicación aparece una sola vez por pedido (RN16), cada renglón es una venta distinta. `SUM` acumula las unidades y la cantidad × precio unitario, con el precio del renglón y no el actual de la publicación (RN26).
+- **Agrupación:** `GROUP BY` por publicación. `COUNT(*)` cuenta los renglones: como una publicación aparece una sola vez por pedido (RN16), cada renglón es una venta distinta. `SUM` acumula las unidades y lo cobrado por cada renglón: la cantidad × precio unitario, con el precio del renglón y no el actual de la publicación (RN26), menos su parte del descuento del pedido (RN32). Esa parte la calcula `dbo.fn_DescuentoRenglon`, como en [Total de ventas por vendedor](total-ventas-por-vendedor.md), y se crea en [`calcular_descuento_pedido/script.sql`](../../sql/tecnico/procedimientos_funciones/calcular_descuento_pedido/script.sql), de la Etapa 5, que debe ejecutarse antes que esta consulta.
 - **Orden:** por monto recaudado y, a igual monto, por número de publicación.
 
 ## 4. Resultado esperado
@@ -25,11 +25,11 @@ Con `@vendedor_id = 25` y el año 2026 completo devuelve 15 publicaciones, entre
 
 | Publicación | Libro                   | Condición  | Ventas | Unidades | Recaudado |
 | ----------: | ----------------------- | ---------- | -----: | -------: | --------: |
-|          56 | El Señor de los Anillos | Nuevo      |      7 |        8 |  $403.400 |
-|         140 | El conde de Montecristo | Nuevo      |      5 |        7 |  $261.800 |
-|          33 | Residencia en la tierra | Nuevo      |      6 |        9 |  $198.900 |
+|          56 | El Señor de los Anillos | Nuevo      |      7 |        8 |  $383.680 |
+|         140 | El conde de Montecristo | Nuevo      |      5 |        7 |  $254.425 |
+|          33 | Residencia en la tierra | Nuevo      |      6 |        9 |  $193.545 |
 |           … |                         |            |        |          |           |
-|          68 | Beloved                 | Como nuevo |      1 |        1 |   $14.800 |
+|          68 | Beloved                 | Como nuevo |      1 |        1 |   $13.320 |
 |          32 | País de nieve           | Como nuevo |      1 |        1 |   $12.600 |
 
-Las unidades y el monto de las 15 filas suman 65 y $1.714.600, lo mismo que [Total de ventas por vendedor](total-ventas-por-vendedor.md) para este vendedor. Las ventas, en cambio, no se suman: dan 56 frente a 41, porque un pedido con varias de sus publicaciones cuenta una vez en cada publicación, pero una sola en el total del vendedor.
+Las unidades y el monto de las 15 filas suman 65 y $1.664.310, lo mismo que [Total de ventas por vendedor](total-ventas-por-vendedor.md) para este vendedor. Las ventas, en cambio, no se suman: dan 56 frente a 41, porque un pedido con varias de sus publicaciones cuenta una vez en cada publicación, pero una sola en el total del vendedor.

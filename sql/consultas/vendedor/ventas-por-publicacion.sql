@@ -2,7 +2,11 @@
    ventas, unidades vendidas y monto recaudado por cada una de sus
    publicaciones, en los pedidos cuyo pago se aprobó dentro del rango, de mayor
    a menor monto. Si el vendedor no tiene ventas en el período, la consulta no
-   devuelve filas. */
+   devuelve filas.
+
+   El monto recaudado es lo cobrado, con el descuento del pedido (RN32): a cada
+   renglón se le resta su parte, calculada por dbo.fn_DescuentoRenglon
+   (calcular_descuento_pedido/script.sql, Etapa 5). */
 
 -- Con DATETIME, el formato 'AAAA-MM-DD' depende del idioma de la sesión (en
 -- español se lee como 'AAAA-DD-MM'); DATEFORMAT ymd fija su interpretación.
@@ -20,8 +24,12 @@ SELECT
     -- renglón es una venta distinta.
     COUNT(*) AS cantidad_ventas,
     SUM(PD.cantidad) AS unidades_vendidas,
-    -- Precio del renglón, no el actual de la publicación (RN26).
-    SUM(PD.cantidad * PD.precio_unitario) AS total_recaudado
+    -- Precio del renglón, no el actual de la publicación (RN26), menos la parte
+    -- del descuento del pedido que le corresponde al renglón.
+    SUM(
+        PD.cantidad * PD.precio_unitario
+        - dbo.fn_DescuentoRenglon(PD.pedido_detalle_id)
+    ) AS total_recaudado
 FROM dbo.PUBLICACION AS PUB
 INNER JOIN dbo.LIBRO AS L
     ON PUB.libro_id = L.libro_id

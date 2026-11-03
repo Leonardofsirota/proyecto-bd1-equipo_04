@@ -5,7 +5,11 @@
 
    Un pedido puede incluir libros de varios vendedores (RN16): solo se muestran
    los renglones del vendedor indicado, y el total suma solo esos renglones. Si
-   el vendedor no tiene pedidos para entregar, la consulta no devuelve filas. */
+   el vendedor no tiene pedidos para entregar, la consulta no devuelve filas.
+
+   El total es lo cobrado, con el descuento del pedido (RN32): cada renglón
+   muestra su parte, calculada por dbo.fn_DescuentoRenglon
+   (calcular_descuento_pedido/script.sql, Etapa 5), y el total la resta. */
 
 DECLARE @vendedor_id INT = 25;
 
@@ -34,11 +38,15 @@ SELECT
     PD.cantidad,
     PD.precio_unitario,
     PD.cantidad * PD.precio_unitario AS subtotal,
+    -- Parte del descuento del pedido que corresponde al renglón.
+    dbo.fn_DescuentoRenglon(PD.pedido_detalle_id) AS descuento,
 
     -- La función de ventana se calcula después del WHERE, así que suma solo
     -- los renglones del vendedor y no el total del pedido.
-    SUM(PD.cantidad * PD.precio_unitario)
-        OVER (PARTITION BY P.pedido_id) AS total_vendedor
+    SUM(
+        PD.cantidad * PD.precio_unitario
+        - dbo.fn_DescuentoRenglon(PD.pedido_detalle_id)
+    ) OVER (PARTITION BY P.pedido_id) AS total_vendedor
 FROM dbo.PEDIDO AS P
 INNER JOIN dbo.PEDIDO_ESTADO AS PE
     ON P.pedido_estado_id = PE.pedido_estado_id
