@@ -1,83 +1,69 @@
-# Demostración de `calcular_descuento_pedido/demostracion.sql`
+# Demostración: cálculo del descuento por volumen
 
-- **Fecha:** 2026-11-03 09:38
-- **Repetición:** 2026-11-03, enseguida y sobre la misma base: salida idéntica.
-- **Base temporal:** `tmp_validacion_pf`, recién cargada en el orden de instalación del README (DDL, datos de prueba, `calcular_descuento_pedido/script.sql`, `triggers-consistencia.sql` y `registrar_venta/script.sql`), más `abm_categorias/script.sql`
-- **Servidor:** Microsoft SQL Server 2025 (RTM) Express Edition (64-bit)
-- **Método:** salida de `sqlcmd`, agrupada por caso. Lo esperado es lo que anotan los comentarios de la demostración. `sqlcmd` muestra los decimales en cero como `.00`; acá figuran como `0.00`.
+Prueba las funciones `fn_TotalPedido`, `fn_PorcentajeDescuentoPedido`, `fn_ImporteDescuento` y `fn_DescuentoRenglon`, que calculan el total de un pedido, su porcentaje de descuento por tramo, el importe de ese descuento y la parte que le toca a cada renglón. Cubren el total calculado (RN17) y el descuento por volumen, que se calcula y no se almacena (RN30 a RN32). La demostración solo consulta pedidos de los datos de prueba: no escribe en la base.
+
+**Ejecución:** 2026-11-03 · SQL Server 2025 Express · base de prueba recién cargada · **7 de 7** consultas coinciden con lo esperado
 
 ## Resumen
 
-| Consultas | Coinciden con lo esperado | No coinciden |
-| --------- | ------------------------- | ------------ |
-| 7         | 7                         | 0            |
+| Caso | Qué se prueba                             | Consultas | Resultado |
+| ---- | ----------------------------------------- | --------- | --------- |
+| 1    | Tramos de descuento                       | 3         | OK        |
+| 2    | Pedido cancelado de más de 100.000        | 1         | OK        |
+| 3    | Pedido inexistente                        | 1         | OK        |
+| 4    | Reparto del descuento entre los renglones | 1         | OK        |
+| 5    | Renglón inexistente                       | 1         | OK        |
 
 ## Caso 1: tramos de descuento
 
-Una consulta por tramo, con los pedidos 1, 15 y 18.
+Un pedido de cada tramo: hasta 100.000 no hay descuento, hasta 200.000 corresponde el 5 % y por encima, el 10 %. En los tres pedidos, el porcentaje y el importe del descuento son los que fija la regla.
 
-| pedido_id | PorcentajeDescuento | TotalPedido | ImporteDescuento |
-| --------- | ------------------- | ----------- | ---------------- |
-| 1         | 0.00                | 35000.00    | 0.00             |
-| 15        | 5.00                | 100700.00   | 5035.00          |
-| 18        | 10.00               | 203600.00   | 20360.00         |
-
-**Comprobaciones**
-
-| Comprobación               | Esperado                              | Obtenido                                       | Resultado |
-| -------------------------- | ------------------------------------- | ---------------------------------------------- | --------- |
-| Tramo del 0 % (pedido 1)   | total 35000 / 0 % / descuento 0       | total 35000.00 / 0.00 % / descuento 0.00       | OK        |
-| Tramo del 5 % (pedido 15)  | total 100700 / 5 % / descuento 5035   | total 100700.00 / 5.00 % / descuento 5035.00   | OK        |
-| Tramo del 10 % (pedido 18) | total 203600 / 10 % / descuento 20360 | total 203600.00 / 10.00 % / descuento 20360.00 | OK        |
+| Pedido | Total     | Porcentaje | Descuento | Resultado |
+| ------ | --------- | ---------- | --------- | --------- |
+| 1      | 35000.00  | 0.00 %     | 0.00      | OK        |
+| 15     | 100700.00 | 5.00 %     | 5035.00   | OK        |
+| 18     | 203600.00 | 10.00 %    | 20360.00  | OK        |
 
 ## Caso 2: pedido cancelado de más de 100.000
 
-| pedido_id | Estado    | PorcentajeDescuento | TotalPedido | ImporteDescuento |
-| --------- | --------- | ------------------- | ----------- | ---------------- |
-| 62        | Cancelado | 0.00                | 127400.00   | 0.00             |
+Un pedido cancelado no recibe descuento, aunque su total supere 100.000: las funciones devuelven 0 % y un descuento de 0.00.
 
-**Comprobaciones**
-
-| Comprobación          | Esperado          | Obtenido                                     | Resultado |
-| --------------------- | ----------------- | -------------------------------------------- | --------- |
-| Pedido cancelado (62) | 0 % / descuento 0 | 0.00 % / descuento 0.00, con total 127400.00 | OK        |
+| Pedido | Estado    | Total     | Porcentaje | Descuento | Resultado |
+| ------ | --------- | --------- | ---------- | --------- | --------- |
+| 62     | Cancelado | 127400.00 | 0.00 %     | 0.00      | OK        |
 
 ## Caso 3: pedido inexistente
 
-| PorcentajeDescuento |
-| ------------------- |
-| 0.00                |
+Para un pedido que no existe, la función del porcentaje devuelve 0.00 en lugar de fallar.
 
-**Comprobaciones**
+| Consulta                          | Valor | Resultado |
+| --------------------------------- | ----- | --------- |
+| `fn_PorcentajeDescuentoPedido(0)` | 0.00  | OK        |
 
-| Comprobación                      | Esperado | Obtenido | Resultado |
-| --------------------------------- | -------- | -------- | --------- |
-| `fn_PorcentajeDescuentoPedido(0)` | 0        | 0.00     | OK        |
+## Caso 4: reparto del descuento entre los renglones
 
-## Caso 4: reparto del descuento del pedido 15
+El descuento del pedido del tramo del 5 % (5035.00) se reparte entre sus tres renglones, en proporción al subtotal de cada uno. Las partes suman exactamente el descuento del pedido, y lo cobrado por renglón suma el importe del pago aprobado del pedido. Por eso un reporte que suma ventas por renglón coincide con lo cobrado.
 
-| pedido_detalle_id | Subtotal | DescuentoRenglon | Cobrado  |
-| ----------------- | -------- | ---------------- | -------- |
-| 31                | 19600.00 | 980.00           | 18620.00 |
-| 32                | 18400.00 | 920.00           | 17480.00 |
-| 33                | 62700.00 | 3135.00          | 59565.00 |
+| Renglón | Subtotal | Descuento | Cobrado  |
+| ------- | -------- | --------- | -------- |
+| 31      | 19600.00 | 980.00    | 18620.00 |
+| 32      | 18400.00 | 920.00    | 17480.00 |
+| 33      | 62700.00 | 3135.00   | 59565.00 |
 
-**Comprobaciones**
-
-| Comprobación           | Esperado                            | Obtenido                                                                     | Resultado |
-| ---------------------- | ----------------------------------- | ---------------------------------------------------------------------------- | --------- |
-| Descuento por renglón  | 980 / 920 / 3135                    | 980.00 / 920.00 / 3135.00                                                    | OK        |
-| Suma de los descuentos | 5035, el descuento del pedido       | 5035.00                                                                      | OK        |
-| Suma de lo cobrado     | 95665, el importe del pago aprobado | 95665.00; el pago 19 del pedido está Aprobado por 95665.00 (consulta aparte) | OK        |
+| Comprobación                                           | Valor                    | Resultado |
+| ------------------------------------------------------ | ------------------------ | --------- |
+| Descuento de cada renglón                              | 980.00, 920.00 y 3135.00 | OK        |
+| Suma de los descuentos, igual al descuento del pedido  | 5035.00                  | OK        |
+| Suma de lo cobrado, igual al importe del pago aprobado | 95665.00                 | OK        |
 
 ## Caso 5: renglón inexistente
 
-| DescuentoRenglon |
-| ---------------- |
-| NULL             |
+Para un renglón que no existe, la función del reparto devuelve NULL en lugar de fallar.
 
-**Comprobaciones**
+| Consulta                 | Valor | Resultado |
+| ------------------------ | ----- | --------- |
+| `fn_DescuentoRenglon(0)` | NULL  | OK        |
 
-| Comprobación             | Esperado | Obtenido | Resultado |
-| ------------------------ | -------- | -------- | --------- |
-| `fn_DescuentoRenglon(0)` | NULL     | NULL     | OK        |
+## Conclusión
+
+Las funciones aplican los tres tramos del descuento, incluido el límite de 100.000, y no descuentan nada a un pedido cancelado. El reparto por renglón suma exactamente el descuento del pedido, y lo cobrado por renglón, el importe del pago aprobado. Ante un pedido o un renglón inexistente devuelven 0.00 o NULL, sin error. La demostración solo lee: la base quedó igual.
