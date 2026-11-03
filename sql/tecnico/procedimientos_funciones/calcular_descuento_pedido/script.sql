@@ -127,6 +127,64 @@ BEGIN
 END;
 GO
 
+IF OBJECT_ID(N'dbo.fn_DescuentoRenglon', N'FN') IS NOT NULL
+    DROP FUNCTION dbo.fn_DescuentoRenglon;
+GO
+
+-- Devuelve la parte del descuento de un pedido que corresponde a uno de sus
+-- renglones, en proporción a su subtotal (RN32). La usan los reportes de ventas
+-- que reparten un pedido entre vendedores, categorías, libros o publicaciones:
+-- lo cobrado por un renglón es su subtotal menos esta parte.
+-- Para que las partes de un pedido sumen exactamente su descuento, cada renglón
+-- recibe el descuento proporcional acumulado hasta él menos el acumulado hasta el
+-- renglón anterior, en el orden de pedido_detalle_id y redondeados a dos decimales.
+-- Repartir cada parte por separado podría dejar una diferencia de centavos.
+-- Devuelve 0 si el pedido no tiene descuento, y NULL si el renglón no existe.
+CREATE FUNCTION dbo.fn_DescuentoRenglon
+(
+    @PedidoDetalleId INT
+)
+RETURNS DECIMAL(18, 2)
+AS
+BEGIN
+    DECLARE @PedidoId INT;
+    DECLARE @Subtotal DECIMAL(18, 2);
+    DECLARE @Total DECIMAL(18, 2);
+    DECLARE @Descuento DECIMAL(18, 2);
+    DECLARE @Acumulado DECIMAL(18, 2);
+
+    SELECT
+        @PedidoId = PD.pedido_id,
+        @Subtotal = PD.cantidad * PD.precio_unitario
+    FROM dbo.PEDIDO_DETALLE AS PD
+    WHERE PD.pedido_detalle_id = @PedidoDetalleId;
+
+    IF @PedidoId IS NULL
+        RETURN NULL;
+
+    -- El mismo cálculo con que usp_IniciarPago fija el importe del pago.
+    SET @Total = dbo.fn_TotalPedido(@PedidoId);
+    SET @Descuento = dbo.fn_ImporteDescuento(
+        @Total,
+        dbo.fn_PorcentajeDescuentoPedido(@PedidoId)
+    );
+
+    -- Con descuento, el total supera 100.000: la división no puede ser por cero.
+    IF COALESCE(@Descuento, 0) = 0
+        RETURN 0;
+
+    -- Subtotales de este renglón y de los anteriores del mismo pedido.
+    SELECT @Acumulado = SUM(PD.cantidad * PD.precio_unitario)
+    FROM dbo.PEDIDO_DETALLE AS PD
+    WHERE PD.pedido_id = @PedidoId
+        AND PD.pedido_detalle_id <= @PedidoDetalleId;
+
+    RETURN
+        CAST(ROUND(@Acumulado * @Descuento / @Total, 2) AS DECIMAL(18, 2))
+        - CAST(ROUND((@Acumulado - @Subtotal) * @Descuento / @Total, 2) AS DECIMAL(18, 2));
+END;
+GO
+
 -- Pedido en el tramo del 0 %: total del pedido 35.000, descuento 0.
 SELECT
     P.pedido_id,
@@ -204,4 +262,28 @@ GO
 
 -- Pedido inexistente: porcentaje 0.
 SELECT dbo.fn_PorcentajeDescuentoPedido(0) AS PorcentajeDescuento;
+GO
+
+-- Reparto del descuento del pedido 15 (tramo del 5 %) entre sus tres renglones:
+-- 980, 920 y 3.135 suman el descuento del pedido, 5.035, y lo cobrado suma
+-- 95.665, el importe de su pago aprobado.
+SELECT
+    PD.pedido_detalle_id,
+
+    PD.cantidad * PD.precio_unitario
+        AS Subtotal,
+
+    dbo.fn_DescuentoRenglon(PD.pedido_detalle_id)
+        AS DescuentoRenglon,
+
+    PD.cantidad * PD.precio_unitario
+        - dbo.fn_DescuentoRenglon(PD.pedido_detalle_id)
+        AS Cobrado
+FROM dbo.PEDIDO_DETALLE AS PD
+WHERE PD.pedido_id = 15
+ORDER BY PD.pedido_detalle_id;
+GO
+
+-- Renglón inexistente: NULL.
+SELECT dbo.fn_DescuentoRenglon(0) AS DescuentoRenglon;
 GO
