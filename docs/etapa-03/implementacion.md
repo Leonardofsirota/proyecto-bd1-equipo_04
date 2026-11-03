@@ -16,13 +16,13 @@ La instalación completa suma dos scripts de la Etapa 5 y sigue este orden:
 
 1. `sql/ddl/sistema-venta-libros.sql`
 2. `sql/dml/datos_prueba.sql`
-3. `calcular_descuento_pedido/script.sql`, que crea `fn_TotalPedido`
+3. `calcular_descuento_pedido/script.sql`, que crea `fn_TotalPedido` y las funciones del descuento
 4. `sql/ddl/triggers-consistencia.sql`
 5. `registrar_venta/script.sql`, que crea `fn_StockLibre` y los procedimientos de venta
 
 Los triggers no forman parte del primer script porque controlan el ciclo de vida de pedidos y pagos, y los datos de prueba se cargan con ese ciclo ya terminado: traen pedidos entregados y pagos aprobados. Por eso se instalan después de la carga. `fn_StockLibre` todavía no existe al crearlos, pero no es un problema: el motor resuelve el nombre al ejecutar el trigger.
 
-Los dos primeros scripts están protegidos contra una segunda ejecución por error: el primero se detiene si la base ya existe, y el segundo, si alguna tabla ya tiene datos. En ambos casos avisan y no modifican nada. El tercero se detiene sin cambios si falta `fn_TotalPedido` o si la base no tiene datos, y se puede repetir: elimina cada trigger y lo vuelve a crear. Además, los tres fijan por sí mismos las opciones de sesión que necesitan, por lo que funcionan igual desde SSMS que desde la línea de comandos (`sqlcmd`).
+Los dos primeros scripts están protegidos contra una segunda ejecución por error: el primero se detiene si la base ya existe, y el segundo, si alguna tabla ya tiene datos. En ambos casos avisan y no modifican nada. El tercero se detiene sin cambios si faltan las funciones del total y del descuento o si la base no tiene datos, y se puede repetir: elimina cada trigger y lo vuelve a crear. Además, los tres fijan por sí mismos las opciones de sesión que necesitan, por lo que funcionan igual desde SSMS que desde la línea de comandos (`sqlcmd`).
 
 **`READ_COMMITTED_SNAPSHOT`.** El script de triggers activa esta opción de la base si todavía no lo está. Se hace ahí y no en el DDL para que también llegue a una base ya creada. Hace falta porque un trigger `AFTER` lee después de escribir, al revés que los procedimientos, que primero bloquean y validan. Con el aislamiento por defecto, esas lecturas esperan las filas sin confirmar de otra sesión, y dos sesiones pueden bloquearse mutuamente. En una prueba de 8 sesiones y 320 ventas sobre publicaciones distintas hubo 168 interbloqueos sin la opción y ninguno con ella: las lecturas usan la última versión confirmada y no esperan, mientras que las escrituras y los bloqueos explícitos de los procedimientos se siguen serializando. La opción se activa con `WITH ROLLBACK IMMEDIATE`, que revierte las transacciones abiertas en otras conexiones de la base, así que conviene ejecutar el script sin actividad.
 

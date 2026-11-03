@@ -61,18 +61,20 @@ Las filas cargadas coinciden, tabla por tabla, con las cantidades de [Implementa
 
 Algunas reglas de negocio no las controla el esquema, porque dependen de otras filas o de otras tablas. Para comprobar que los datos de prueba igualmente las respetan, se buscaron con consultas las filas que las incumplirían. **Ninguna consulta encontró casos:**
 
-| Reglas     | Se buscaron                                                                                       |
-| ---------- | ------------------------------------------------------------------------------------------------- |
-| RN04, RN10 | Pedidos de usuarios que no son clientes; publicaciones de usuarios que no son vendedores.         |
-| RN08, RN15 | Libros sin autor; pedidos sin renglones.                                                          |
-| RN12       | Renglones con publicaciones no vigentes al hacer el pedido; publicaciones disponibles sin stock.  |
-| RN18       | Pedidos cuya dirección de envío no coincide con ninguna dirección del cliente.                    |
-| RN19       | Pedidos confirmados o entregados sin pago aprobado, y pendientes o cancelados con uno.            |
-| RN22       | Pagos cuyo importe difiere del total del pedido.                                                  |
-| RN24       | Pedidos con dos pagos aprobados; nuevos intentos después de uno pendiente o aprobado.             |
-| RN25       | Pagos aprobados sin fecha de acreditación, o no aprobados con ella.                               |
-| RN28       | Pedidos realizados por un cliente después de su baja.                                             |
-| —          | Pagos iniciados antes que su pedido.                                                              |
+| Reglas     | Se buscaron                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------ |
+| RN04, RN10 | Pedidos de usuarios que no son clientes; publicaciones de usuarios que no son vendedores.        |
+| RN08, RN15 | Libros sin autor; pedidos sin renglones.                                                         |
+| RN12       | Renglones con publicaciones no vigentes al hacer el pedido; publicaciones disponibles sin stock. |
+| RN18       | Pedidos cuya dirección de envío no coincide con ninguna dirección del cliente.                   |
+| RN19       | Pedidos confirmados o entregados sin pago aprobado, y pendientes o cancelados con uno.           |
+| RN22, RN32 | Pagos cuyo importe difiere del total del pedido menos el descuento de su tramo.                  |
+| RN24       | Pedidos con dos pagos aprobados; nuevos intentos después de uno pendiente o aprobado.            |
+| RN25       | Pagos aprobados sin fecha de acreditación, o no aprobados con ella.                              |
+| RN28       | Pedidos realizados por un cliente después de su baja.                                            |
+| —          | Pagos iniciados antes que su pedido.                                                             |
+
+El control de RN22 toma el tramo de descuento del total, sin mirar el estado del pedido: dos pagos son de pedidos que se cancelaron después, y conservan el importe con descuento con que se registraron (RN32). 152 de los 718 pagos tienen descuento.
 
 También se confirmó el escenario del precio histórico (RN26): 795 de los 1.290 renglones guardan un precio unitario distinto del precio actual de su publicación, entre ellos los dos del pedido 94.
 
@@ -190,7 +192,7 @@ Estas pruebas ejercitan los [triggers](restricciones-integridad.md#6-triggers) c
 | Dar de alta un pago aprobado, y uno pendiente con fecha                                                         | Rechazado (50231), cada uno                                                | `trg_PAGO_Alta`               |
 | Dar de alta un pago sobre un pedido confirmado                                                                  | Rechazado (50232)                                                          | `trg_PAGO_Alta`               |
 | Dar de alta un segundo pago con uno pendiente, y dos pagos en una sentencia sobre un pedido sin pagos           | Rechazado (50233), cada uno                                                | `trg_PAGO_Alta`               |
-| Dar de alta un pago con importe distinto del total, y uno sobre un pedido sin renglones                         | Rechazado (50234), cada uno                                                | `trg_PAGO_Alta`               |
+| Dar de alta un pago con importe distinto del total con descuento, y uno sobre un pedido sin renglones           | Rechazado (50234), cada uno                                                | `trg_PAGO_Alta`               |
 | Dar de alta un pago con la reserva vencida, y uno sobre un pedido con fecha futura                              | Rechazado (50235), cada uno                                                | `trg_PAGO_Alta`               |
 | Dar de alta un pago con la reserva vigente                                                                      | Aceptado                                                                   | `trg_PAGO_Alta`               |
 | Borrar un pago                                                                                                  | Rechazado (50241)                                                          | `trg_PAGO_SinBorrado`         |
@@ -244,26 +246,26 @@ Los 113 casos dieron el resultado esperado. Para comprobar que las pruebas del o
 
 **Datos cargados.** Los triggers revisan solo las filas que cambian, así que los datos de prueba se comprobaron con consultas. Ninguna encontró casos:
 
-| Reglas     | Se buscaron                                                    |
-| ---------- | -------------------------------------------------------------- |
-| RN19       | Pagos aprobados con el pedido fuera de confirmado o entregado. |
-| RN19       | Pedidos confirmados o entregados sin pago aprobado.            |
-| RN12, RN14 | Publicaciones sin stock que figuran como disponibles.          |
-| RN25       | Pagos aprobados sin fecha de acreditación.                     |
-| RN25       | Pagos pendientes o rechazados con fecha de acreditación.       |
-| RN22       | Pagos con un importe distinto del total del pedido.            |
-| RN24       | Pedidos con más de un pago pendiente o aprobado.               |
-| RN15       | Pedidos sin renglones.                                         |
-| RN10       | Publicaciones de un usuario sin rol de vendedor.               |
-| RN08       | Publicaciones de un libro sin autor.                           |
-| RN04       | Pedidos de un usuario sin rol de cliente.                      |
-| RN18       | Pedidos cuya dirección no coincide con una del cliente.        |
-| RN12, RN28 | Vendedores dados de baja con publicaciones vigentes.           |
-| RN08       | Libros sin autor.                                              |
+| Reglas     | Se buscaron                                                                        |
+| ---------- | ---------------------------------------------------------------------------------- |
+| RN19       | Pagos aprobados con el pedido fuera de confirmado o entregado.                     |
+| RN19       | Pedidos confirmados o entregados sin pago aprobado.                                |
+| RN12, RN14 | Publicaciones sin stock que figuran como disponibles.                              |
+| RN25       | Pagos aprobados sin fecha de acreditación.                                         |
+| RN25       | Pagos pendientes o rechazados con fecha de acreditación.                           |
+| RN22, RN32 | Pagos con un importe distinto del total del pedido menos el descuento de su tramo. |
+| RN24       | Pedidos con más de un pago pendiente o aprobado.                                   |
+| RN15       | Pedidos sin renglones.                                                             |
+| RN10       | Publicaciones de un usuario sin rol de vendedor.                                   |
+| RN08       | Publicaciones de un libro sin autor.                                               |
+| RN04       | Pedidos de un usuario sin rol de cliente.                                          |
+| RN18       | Pedidos cuya dirección no coincide con una del cliente.                            |
+| RN12, RN28 | Vendedores dados de baja con publicaciones vigentes.                               |
+| RN08       | Libros sin autor.                                                                  |
 
-**Instalación.** Con los triggers instalados después de la carga, `datos_prueba.sql` sigue cargando sus filas sin cambios. El script de triggers se detiene sin crear nada si la base no tiene datos o falta `fn_TotalPedido`, y `registrar_venta/script.sql` se detiene si falta `trg_PAGO_ConfirmarPedido`, `trg_USUARIO_Baja`, `trg_PAGO_SinBorrado` o `trg_DETALLE_Congelado`. Repetir el script de triggers los reemplaza y conserva el orden.
+**Instalación.** Con los triggers instalados después de la carga, `datos_prueba.sql` sigue cargando sus filas sin cambios. El script de triggers se detiene sin crear nada si la base no tiene datos o falta alguna de las funciones del total y del descuento (`fn_TotalPedido`, `fn_PorcentajeDescuentoPedido` y `fn_ImporteDescuento`), y `registrar_venta/script.sql` se detiene si falta alguna de esas funciones, `trg_PAGO_ConfirmarPedido`, `trg_USUARIO_Baja`, `trg_PAGO_SinBorrado` o `trg_DETALLE_Congelado`. Repetir el script de triggers los reemplaza y conserva el orden.
 
-**Flujo completo.** Con los triggers activos, la demostración de `registrar_venta/script.sql` dio 47 de 47 comprobaciones en dos ejecuciones seguidas, sin dejar filas ni triggers deshabilitados. La secuencia de la limpieza, con un error provocado después de deshabilitar los triggers, también los dejó habilitados. Las [pruebas de concurrencia](../../sql/tecnico/procedimientos_funciones/registrar_venta/evidencias/concurrencia.md) dieron los cinco casos correctos y ningún interbloqueo.
+**Flujo completo.** Con los triggers activos, la demostración de `registrar_venta/script.sql` dio 53 de 53 comprobaciones en dos ejecuciones seguidas, sin dejar filas ni triggers deshabilitados. Entre ellas está el cobro con descuento: un pago directo por el total sin descuento se rechaza (50234), y el procedimiento registra el pago por el total menos el descuento. La secuencia de la limpieza, con un error provocado después de deshabilitar los triggers, también los dejó habilitados. Las [pruebas de concurrencia](../../sql/tecnico/procedimientos_funciones/registrar_venta/evidencias/concurrencia.md) dieron los cinco casos correctos y ningún interbloqueo.
 
 ## 8. Alcance de las pruebas
 
