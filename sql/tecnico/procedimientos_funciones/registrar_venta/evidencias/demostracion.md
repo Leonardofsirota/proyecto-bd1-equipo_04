@@ -1,8 +1,9 @@
-# Demostración de `registrar_venta/script.sql`
+# Demostración de `registrar_venta/demostracion.sql`
 
 - **Fecha:** 2026-10-31 10:02
 - **Repetición:** 2026-11-01, con los 15 triggers de `sql/ddl/triggers-consistencia.sql`: 47 de 47. Los ID, las horas y el checksum de las tablas son de la corrida original.
 - **Repetición:** 2026-11-03, con el descuento aplicado al importe del pago: 53 de 53, dos veces sobre una base recién cargada. El caso 11 y las columnas de descuento de `usp_CrearPedido` son de esta corrida, y los ID de los casos 1 a 10 coinciden con los de la original. Las tablas tampoco cambiaron: el checksum de PUBLICACION y las cantidades de filas fueron iguales antes y después.
+- **Repetición:** 2026-11-03, con la demostración separada de `script.sql` en `demostracion.sql`: 53 de 53, dos veces seguidas sobre una base recién cargada, sin dejar filas ni triggers deshabilitados.
 - **Base temporal:** `tmp_validacion_rv`, recién cargada con el DDL y los datos de prueba
 - **Servidor:** Microsoft SQL Server 2025 (RTM) Express Edition (64-bit)
 - **Método:** salida de `sqlcmd`, agrupada por caso: primero lo que devuelve cada procedimiento y después las comprobaciones de `@Resultados`.
