@@ -89,7 +89,7 @@ El modelo de datos, las reglas de negocio y las consultas se explican en detalle
 
 3. Abrir [`sql/dml/datos_prueba.sql`](sql/dml/datos_prueba.sql) y ejecutarlo completo con <kbd>F5</kbd>. Carga los datos de prueba.
 
-4. Abrir [`calcular_descuento_pedido/script.sql`](sql/tecnico/procedimientos_funciones/calcular_descuento_pedido/script.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea las funciones de la Etapa 5 que calculan el total y el descuento de un pedido.
+4. Abrir [`calcular_descuento_pedido/script.sql`](sql/tecnico/procedimientos_funciones/calcular_descuento_pedido/script.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea las funciones de la Etapa 5 que calculan el total y el descuento de un pedido, que también usan el comprobante y los reportes de ventas.
 
 5. Abrir [`sql/ddl/triggers-consistencia.sql`](sql/ddl/triggers-consistencia.sql) y ejecutarlo completo con <kbd>F5</kbd>. Crea los triggers de consistencia y activa `READ_COMMITTED_SNAPSHOT` en la base.
 
