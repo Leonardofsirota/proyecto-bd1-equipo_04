@@ -20,7 +20,7 @@ Los permisos efectivos de cada usuario, comprobados bajo su suplantación. El us
 | usuario_con_rol | Sí              | Sí              | No              | No              | No              | No                |
 | usuario_sin_rol | No              | No              | No              | No              | No              | No                |
 
-## Pasos
+## Resumen
 
 | Paso | Usuario         | Operación                                | Resultado obtenido | Resultado |
 | ---- | --------------- | ---------------------------------------- | ------------------ | --------- |
@@ -30,6 +30,8 @@ Los permisos efectivos de cada usuario, comprobados bajo su suplantación. El us
 | 4    | usuario_con_rol | `UPDATE` sobre LIBRO                     | Error 229          | OK        |
 | 5    | usuario_sin_rol | `SELECT` sobre LIBRO, ya miembro del rol | Permitido          | OK        |
 | 6    | usuario_sin_rol | `SELECT` sobre LIBRO, quitado del rol    | Error 229          | OK        |
+
+## Detalle de los pasos
 
 En el paso 1, el usuario con el rol lee los 500 libros de `LIBRO`. En el paso 2, el usuario sin el rol intenta la misma lectura, y SQL Server la rechaza con el error 229 antes de devolver ninguna fila, tal como aparece en SSMS (el mensaje nombra la base de prueba):
 

@@ -20,7 +20,7 @@ Los permisos efectivos de cada usuario, comprobados bajo su suplantación. El ad
 | usuario_admin   | Sí       | No            | Sí                  | Sí                  | Sí                              | Sí                              |
 | usuario_lectura | No       | Sí            | Sí                  | No                  | Sí                              | No                              |
 
-## Pasos
+## Resumen
 
 | Paso | Usuario         | Operación                        | Resultado obtenido | Resultado |
 | ---- | --------------- | -------------------------------- | ------------------ | --------- |
@@ -29,6 +29,8 @@ Los permisos efectivos de cada usuario, comprobados bajo su suplantación. El ad
 | 3    | usuario_lectura | `EXEC dbo.usp_InsertarCategoria` | Permitido          | OK        |
 | 4    | usuario_lectura | `SELECT` sobre CATEGORIA         | Permitido          | OK        |
 | 5    | usuario_lectura | `EXEC dbo.usp_EliminarCategoria` | Error 229          | OK        |
+
+## Detalle de los pasos
 
 En el paso 1, el administrador da de alta una categoría con un `INSERT` directo, y SQL Server lo acepta. En el paso 2, el usuario de solo lectura intenta lo mismo y SQL Server lo rechaza con el error 229, tal como aparece en SSMS (el mensaje nombra la base de prueba):
 
