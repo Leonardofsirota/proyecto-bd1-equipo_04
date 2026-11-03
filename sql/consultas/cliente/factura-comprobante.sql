@@ -1,9 +1,12 @@
 ﻿/* Comprobante de venta: encabezado (número, fecha, método de pago y cliente)
-   y detalle de una venta, con el subtotal por renglón y el total de la venta.
+   y detalle de una venta, con el subtotal por renglón, el total de la venta,
+   su descuento y el total cobrado.
 
    Una venta es un pedido con un pago aprobado. No hace falta filtrar por el
    estado del pedido, porque al aprobarse el pago pasa a confirmado (RN19). Si
-   el pedido indicado no tiene un pago aprobado, la consulta no devuelve filas. */
+   el pedido indicado no tiene un pago aprobado, la consulta no devuelve filas.
+
+   Necesita las funciones de calcular_descuento_pedido/script.sql (Etapa 5). */
 
 DECLARE @pedido_id INT = 151;
 
@@ -32,12 +35,21 @@ SELECT
         AS DECIMAL(18, 2)
     ) AS [Subtotal],
 
-    -- Total de la venta: suma de los subtotales de sus renglones (RN17)
+    -- Total de la venta: suma de los subtotales de sus renglones, sin
+    -- descuento (RN17)
     CAST(
         SUM(PD.cantidad * PD.precio_unitario)
         OVER (PARTITION BY P.pedido_id)
         AS DECIMAL(18, 2)
-    ) AS [Total Venta]
+    ) AS [Total Venta],
+
+    -- Descuento por volumen según el total (RN30 y RN31)
+    DP.porcentaje AS [Porcentaje Descuento],
+    DI.importe AS [Descuento],
+
+    -- Lo que se cobró: el importe del pago aprobado, que es el total menos el
+    -- descuento (RN22 y RN32)
+    PA.importe AS [Total Cobrado]
 
 FROM dbo.PEDIDO AS P
 
@@ -63,6 +75,17 @@ INNER JOIN dbo.PUBLICACION AS PUB
 
 INNER JOIN dbo.LIBRO AS L
     ON PUB.libro_id = L.libro_id
+
+-- El descuento se calcula con las mismas funciones con que usp_IniciarPago
+-- fijó el importe del pago: así, el total menos el descuento da lo cobrado.
+-- El primer CROSS APPLY calcula el porcentaje una sola vez, y el segundo lo usa
+-- para calcular el importe.
+CROSS APPLY (
+    SELECT dbo.fn_PorcentajeDescuentoPedido(P.pedido_id) AS porcentaje
+) AS DP
+CROSS APPLY (
+    SELECT dbo.fn_ImporteDescuento(dbo.fn_TotalPedido(P.pedido_id), DP.porcentaje) AS importe
+) AS DI
 
 WHERE P.pedido_id = @pedido_id
     AND PS.nombre = 'Aprobado'
