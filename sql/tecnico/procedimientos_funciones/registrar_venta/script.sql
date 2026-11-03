@@ -8,11 +8,14 @@ SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
 GO
 
--- dbo.fn_TotalPedido se crea en calcular_descuento_pedido/script.sql.
+-- dbo.fn_TotalPedido, dbo.fn_PorcentajeDescuentoPedido y dbo.fn_ImporteDescuento se
+-- crean en calcular_descuento_pedido/script.sql.
 -- SET NOEXEC ON hace que los lotes siguientes se compilen sin ejecutarse.
 IF OBJECT_ID(N'dbo.fn_TotalPedido', N'FN') IS NULL
+   OR OBJECT_ID(N'dbo.fn_PorcentajeDescuentoPedido', N'FN') IS NULL
+   OR OBJECT_ID(N'dbo.fn_ImporteDescuento', N'FN') IS NULL
 BEGIN
-    RAISERROR(N'Falta dbo.fn_TotalPedido: ejecutar antes calcular_descuento_pedido/script.sql. El script se detuvo sin realizar cambios.', 16, 1);
+    RAISERROR(N'Faltan funciones del total y el descuento: ejecutar antes calcular_descuento_pedido/script.sql. El script se detuvo sin realizar cambios.', 16, 1);
     SET NOEXEC ON;
 END;
 GO
@@ -155,7 +158,8 @@ GO
 -- Valida al cliente, su dirección y el carrito, y crea el pedido Pendiente con el
 -- precio vigente y una copia de la dirección. No descuenta stock: el pedido reserva
 -- unidades durante el plazo de dbo.fn_VencimientoReserva. Devuelve un renglón por
--- publicación, con su subtotal y el total del pedido.
+-- publicación, con su subtotal, el total del pedido, su descuento y el total final,
+-- que es el importe que cobrará el pago.
 CREATE PROCEDURE dbo.usp_CrearPedido
     @UsuarioId INT,
     @DireccionId INT,
@@ -168,6 +172,9 @@ BEGIN
 
     DECLARE @Pub INT = 0;
     DECLARE @Bloqueo INT;
+    DECLARE @Total DECIMAL(18, 2);
+    DECLARE @Porcentaje DECIMAL(5, 2);
+    DECLARE @Descuento DECIMAL(18, 2);
 
     IF NOT EXISTS (
         SELECT 1
@@ -291,13 +298,21 @@ BEGIN
         THROW;
     END CATCH;
 
+    -- Mismo cálculo que dbo.usp_IniciarPago: el total final es lo que se cobra.
+    SET @Total = dbo.fn_TotalPedido(@PedidoId);
+    SET @Porcentaje = dbo.fn_PorcentajeDescuentoPedido(@PedidoId);
+    SET @Descuento = dbo.fn_ImporteDescuento(@Total, @Porcentaje);
+
     SELECT
         PD.pedido_id,
         PD.publicacion_id,
         PD.cantidad,
         PD.precio_unitario,
         PD.cantidad * PD.precio_unitario AS subtotal,
-        dbo.fn_TotalPedido(PD.pedido_id) AS total
+        @Total AS total,
+        @Porcentaje AS porcentaje_descuento,
+        @Descuento AS importe_descuento,
+        @Total - @Descuento AS total_final
     FROM dbo.PEDIDO_DETALLE AS PD
     WHERE PD.pedido_id = @PedidoId
     ORDER BY PD.publicacion_id;
@@ -305,10 +320,10 @@ END;
 GO
 
 -- 2. INICIAR el pago
--- Registra un pago Pendiente por el total de un pedido Pendiente con la reserva
--- vigente y sin otro pago Pendiente o Aprobado. El pago amplía la reserva, así que
--- también toma las publicaciones del pedido. Devuelve el ID del pago, su importe y
--- el vencimiento de la reserva.
+-- Registra un pago Pendiente por el total con descuento de un pedido Pendiente con
+-- la reserva vigente y sin otro pago Pendiente o Aprobado. El pago amplía la reserva,
+-- así que también toma las publicaciones del pedido. Devuelve el ID del pago, su
+-- importe y el vencimiento de la reserva.
 CREATE PROCEDURE dbo.usp_IniciarPago
     @PedidoId INT,
     @PagoMetodoId INT,
@@ -321,6 +336,8 @@ BEGIN
 
     DECLARE @EstadoPedido VARCHAR(50);
     DECLARE @Reserva DATETIME;
+    DECLARE @Total DECIMAL(18, 2);
+    DECLARE @Porcentaje DECIMAL(5, 2);
     DECLARE @Importe DECIMAL(18, 2);
     DECLARE @Pub INT = 0;
     DECLARE @Bloqueo INT;
@@ -376,7 +393,11 @@ BEGIN
         IF @Reserva IS NULL OR @Reserva <= GETDATE()
             THROW 50114, 'La reserva del pedido vencio: debe crear un pedido nuevo.', 1;
 
-        SET @Importe = dbo.fn_TotalPedido(@PedidoId);
+        -- El importe es el total menos el descuento de su tramo. trg_PAGO_Alta repite
+        -- este cálculo y rechaza cualquier otro importe (50234).
+        SET @Total = dbo.fn_TotalPedido(@PedidoId);
+        SET @Porcentaje = dbo.fn_PorcentajeDescuentoPedido(@PedidoId);
+        SET @Importe = @Total - dbo.fn_ImporteDescuento(@Total, @Porcentaje);
 
         INSERT INTO dbo.PAGO
         (
@@ -1554,6 +1575,108 @@ BEGIN TRY
     VALUES
         ('10. usp_RegistrarVenta: pago ya procesado', '50123', CAST(@Error AS VARCHAR(10))),
         ('10. Transacciones abiertas tras cada EXEC', '0', CAST(@Abiertas AS VARCHAR(10)));
+
+    SET @Abiertas = 0;
+
+    -- Caso 11: el pago cobra el total menos el descuento. Con precio 1000, 100 unidades
+    -- suman 100.000, el límite del tramo del 0 %, y 150 suman 150.000, en el del 5 %
+    PRINT 'Caso 11: descuento en el importe del pago';
+
+    EXEC #CrearPublicacionDemo @Vendedor = @Vendedor, @Stock = 250, @PublicacionId = @Pub OUTPUT;
+
+    DELETE FROM @Carrito;
+    INSERT INTO @Carrito (publicacion_id, cantidad)
+    VALUES (@Pub, 100);
+
+    EXEC dbo.usp_CrearPedido
+        @UsuarioId = @ClienteA,
+        @DireccionId = @DireccionA,
+        @Carrito = @Carrito,
+        @PedidoId = @Pedido OUTPUT;
+    SET @Abiertas = @Abiertas + @@TRANCOUNT;
+
+    EXEC dbo.usp_IniciarPago
+        @PedidoId = @Pedido,
+        @PagoMetodoId = @Tarjeta,
+        @PagoId = @Pago OUTPUT;
+    SET @Abiertas = @Abiertas + @@TRANCOUNT;
+
+    SELECT @Estado = 'total ' + CAST(dbo.fn_TotalPedido(pedido_id) AS VARCHAR(20))
+        + ' / ' + CAST(dbo.fn_PorcentajeDescuentoPedido(pedido_id) AS VARCHAR(10)) + ' %'
+        + ' / importe ' + CAST(importe AS VARCHAR(20))
+    FROM dbo.PAGO
+    WHERE pago_id = @Pago;
+
+    INSERT INTO @Resultados (caso, esperado, obtenido)
+    VALUES ('11. Sin descuento: total, porcentaje e importe', 'total 100000.00 / 0.00 % / importe 100000.00', @Estado);
+
+    EXEC dbo.usp_RegistrarVenta
+        @PagoId = @Pago,
+        @Resultado = 'Aprobado';
+    SET @Abiertas = @Abiertas + @@TRANCOUNT;
+
+    EXEC #EstadoDemoVenta @PagoId = @Pago, @Estado = @Estado OUTPUT;
+
+    INSERT INTO @Resultados (caso, esperado, obtenido)
+    VALUES ('11. Sin descuento: venta registrada', 'Aprobado con fecha / Confirmado / stock 150 / disponible 1', @Estado);
+
+    DELETE FROM @Carrito;
+    INSERT INTO @Carrito (publicacion_id, cantidad)
+    VALUES (@Pub, 150);
+
+    EXEC dbo.usp_CrearPedido
+        @UsuarioId = @ClienteA,
+        @DireccionId = @DireccionA,
+        @Carrito = @Carrito,
+        @PedidoId = @Pedido OUTPUT;
+    SET @Abiertas = @Abiertas + @@TRANCOUNT;
+
+    -- Un pago por el total sin descuento, cargado fuera de usp_IniciarPago. El error
+    -- del trigger deja la transacción de la sentencia sin confirmar: hay que revertirla.
+    SET @Error = NULL;
+    BEGIN TRY
+        INSERT INTO dbo.PAGO (importe, pago_estado_id, pago_metodo_id, pedido_id)
+        SELECT dbo.fn_TotalPedido(@Pedido), PGE.pago_estado_id, @Tarjeta, @Pedido
+        FROM dbo.PAGO_ESTADO AS PGE
+        WHERE PGE.nombre = 'Pendiente';
+    END TRY
+    BEGIN CATCH
+        SET @Error = ERROR_NUMBER();
+
+        IF XACT_STATE() <> 0
+            ROLLBACK TRANSACTION;
+    END CATCH;
+    SET @Abiertas = @Abiertas + @@TRANCOUNT;
+
+    INSERT INTO @Resultados (caso, esperado, obtenido)
+    VALUES ('11. Pago directo por el total sin descuento', '50234', CAST(@Error AS VARCHAR(10)));
+
+    EXEC dbo.usp_IniciarPago
+        @PedidoId = @Pedido,
+        @PagoMetodoId = @Tarjeta,
+        @PagoId = @Pago OUTPUT;
+    SET @Abiertas = @Abiertas + @@TRANCOUNT;
+
+    SELECT @Estado = 'total ' + CAST(dbo.fn_TotalPedido(pedido_id) AS VARCHAR(20))
+        + ' / ' + CAST(dbo.fn_PorcentajeDescuentoPedido(pedido_id) AS VARCHAR(10)) + ' %'
+        + ' / importe ' + CAST(importe AS VARCHAR(20))
+    FROM dbo.PAGO
+    WHERE pago_id = @Pago;
+
+    INSERT INTO @Resultados (caso, esperado, obtenido)
+    VALUES ('11. Con descuento: total, porcentaje e importe', 'total 150000.00 / 5.00 % / importe 142500.00', @Estado);
+
+    EXEC dbo.usp_RegistrarVenta
+        @PagoId = @Pago,
+        @Resultado = 'Aprobado';
+    SET @Abiertas = @Abiertas + @@TRANCOUNT;
+
+    EXEC #EstadoDemoVenta @PagoId = @Pago, @Estado = @Estado OUTPUT;
+
+    INSERT INTO @Resultados (caso, esperado, obtenido)
+    VALUES
+        ('11. Con descuento: venta registrada', 'Aprobado con fecha / Confirmado / stock 0 / disponible 0', @Estado),
+        ('11. Transacciones abiertas tras cada EXEC', '0', CAST(@Abiertas AS VARCHAR(10)));
 END TRY
 BEGIN CATCH
     -- Un error no previsto queda como FALLO: así el lote termina, se muestran los

@@ -46,8 +46,9 @@ IF OBJECT_ID(N'dbo.fn_PorcentajeDescuentoPedido', N'FN') IS NOT NULL
     DROP FUNCTION dbo.fn_PorcentajeDescuentoPedido;
 GO
 
--- Devuelve el porcentaje de descuento de un pedido según su total (RN30). Es
--- informativo: no modifica el total del pedido ni el importe de sus pagos.
+-- Devuelve el porcentaje de descuento de un pedido según su total (RN30). El total
+-- del pedido sigue siendo la suma de sus renglones; el descuento se aplica al importe
+-- del pago (usp_IniciarPago, en registrar_venta/script.sql, y trg_PAGO_Alta).
 -- Si el pedido no existe o está cancelado, devuelve 0.
 -- Tramos: hasta 100.000, 0 %; hasta 200.000, 5 %; más de 200.000, 10 %.
 CREATE FUNCTION dbo.fn_PorcentajeDescuentoPedido

@@ -2,6 +2,7 @@
 
 - **Fecha:** 2026-10-31 10:02
 - **Repetición:** 2026-11-01, con los 15 triggers de `sql/ddl/triggers-consistencia.sql`: 47 de 47. Los ID, las horas y el checksum de las tablas son de la corrida original.
+- **Repetición:** 2026-11-03, con el descuento aplicado al importe del pago: 53 de 53, dos veces sobre una base recién cargada. El caso 11 y las columnas de descuento de `usp_CrearPedido` son de esta corrida, y los ID de los casos 1 a 10 coinciden con los de la original. Las tablas tampoco cambiaron: el checksum de PUBLICACION y las cantidades de filas fueron iguales antes y después.
 - **Base temporal:** `tmp_validacion_rv`, recién cargada con el DDL y los datos de prueba
 - **Servidor:** Microsoft SQL Server 2025 (RTM) Express Edition (64-bit)
 - **Método:** salida de `sqlcmd`, agrupada por caso: primero lo que devuelve cada procedimiento y después las comprobaciones de `@Resultados`.
@@ -10,7 +11,7 @@
 
 | Comprobaciones | Correctas | Fallidas | filas_demo |
 | -------------- | --------- | -------- | ---------- |
-| 47             | 47        | 0        | 0          |
+| 53             | 53        | 0        | 0          |
 
 Datos previos a la demostración:
 
@@ -23,9 +24,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 601       | 792            | 2        | 1000.00         | 2000.00  | 2000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 601       | 792            | 2        | 1000.00         | 2000.00  | 2000.00 | 0.00                 | 0.00              | 2000.00     |
 
 **`usp_IniciarPago`**
 
@@ -50,9 +51,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 602       | 793            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 602       | 793            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **`usp_IniciarPago`**
 
@@ -91,9 +92,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 603       | 794            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 603       | 794            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **`usp_IniciarPago`**
 
@@ -109,9 +110,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 604       | 794            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 604       | 794            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **Comprobaciones**
 
@@ -125,15 +126,15 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 605       | 795            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 605       | 795            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 606       | 795            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 606       | 795            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **Comprobaciones**
 
@@ -159,9 +160,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 607       | 796            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 607       | 796            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **`usp_IniciarPago`**
 
@@ -187,9 +188,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 608       | 797            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 608       | 797            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **`usp_IniciarPago`**
 
@@ -199,9 +200,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 609       | 797            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 609       | 797            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **`usp_RegistrarVenta`**
 
@@ -221,9 +222,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 610       | 798            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 610       | 798            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **`usp_IniciarPago`**
 
@@ -248,9 +249,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 611       | 799            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 611       | 799            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **`usp_IniciarPago`**
 
@@ -260,9 +261,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 612       | 799            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 612       | 799            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **`usp_IniciarPago`**
 
@@ -272,9 +273,9 @@ Datos previos a la demostración:
 
 **`usp_CrearPedido`**
 
-| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   |
-| --------- | -------------- | -------- | --------------- | -------- | ------- |
-| 613       | 799            | 1        | 1000.00         | 1000.00  | 1000.00 |
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal | total   | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | -------- | ------- | -------------------- | ----------------- | ----------- |
+| 613       | 799            | 1        | 1000.00         | 1000.00  | 1000.00 | 0.00                 | 0.00              | 1000.00     |
 
 **Comprobaciones**
 
@@ -309,3 +310,58 @@ Datos previos a la demostración:
 | usp_RegistrarVenta: pago inexistente             | 50122    | 50122    | OK        |
 | usp_RegistrarVenta: pago ya procesado            | 50123    | 50123    | OK        |
 | Transacciones abiertas tras cada EXEC            | 0        | 0        | OK        |
+
+## Caso 11: descuento en el importe del pago
+
+Primer pedido: 100 unidades a 1000.00 suman 100.000, el límite del tramo del 0 %.
+
+**`usp_CrearPedido`**
+
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal  | total     | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | --------- | --------- | -------------------- | ----------------- | ----------- |
+| 614       | 801            | 100      | 1000.00         | 100000.00 | 100000.00 | 0.00                 | 0.00              | 100000.00   |
+
+**`usp_IniciarPago`**
+
+| pago_id | pedido_id | importe   | vencimiento             |
+| ------- | --------- | --------- | ----------------------- |
+| 728     | 614       | 100000.00 | 2026-11-03 08:17:12.007 |
+
+**`usp_RegistrarVenta`**
+
+| pago_id | pedido_id | estado_pago | estado_pedido | mensaje                        |
+| ------- | --------- | ----------- | ------------- | ------------------------------ |
+| 728     | 614       | Aprobado    | Confirmado    | Venta registrada correctamente |
+
+Segundo pedido: 150 unidades suman 150.000, en el tramo del 5 %.
+
+**`usp_CrearPedido`**
+
+| pedido_id | publicacion_id | cantidad | precio_unitario | subtotal  | total     | porcentaje_descuento | importe_descuento | total_final |
+| --------- | -------------- | -------- | --------------- | --------- | --------- | -------------------- | ----------------- | ----------- |
+| 615       | 801            | 150      | 1000.00         | 150000.00 | 150000.00 | 5.00                 | 7500.00           | 142500.00   |
+
+Antes de `usp_IniciarPago`, un `INSERT` directo en PAGO por el total sin descuento (150000.00) falla con el error 50234 de `trg_PAGO_Alta`. Ese intento consume el ID 729: por eso el pago siguiente es el 730.
+
+**`usp_IniciarPago`**
+
+| pago_id | pedido_id | importe   | vencimiento             |
+| ------- | --------- | --------- | ----------------------- |
+| 730     | 615       | 142500.00 | 2026-11-03 08:17:12.030 |
+
+**`usp_RegistrarVenta`**
+
+| pago_id | pedido_id | estado_pago | estado_pedido | mensaje                        |
+| ------- | --------- | ----------- | ------------- | ------------------------------ |
+| 730     | 615       | Aprobado    | Confirmado    | Venta registrada correctamente |
+
+**Comprobaciones**
+
+| Comprobación                               | Esperado                                                   | Obtenido                                                   | Resultado |
+| ------------------------------------------ | ---------------------------------------------------------- | ---------------------------------------------------------- | --------- |
+| Sin descuento: total, porcentaje e importe | total 100000.00 / 0.00 % / importe 100000.00               | total 100000.00 / 0.00 % / importe 100000.00               | OK        |
+| Sin descuento: venta registrada            | Aprobado con fecha / Confirmado / stock 150 / disponible 1 | Aprobado con fecha / Confirmado / stock 150 / disponible 1 | OK        |
+| Pago directo por el total sin descuento    | 50234                                                      | 50234                                                      | OK        |
+| Con descuento: total, porcentaje e importe | total 150000.00 / 5.00 % / importe 142500.00               | total 150000.00 / 5.00 % / importe 142500.00               | OK        |
+| Con descuento: venta registrada            | Aprobado con fecha / Confirmado / stock 0 / disponible 0   | Aprobado con fecha / Confirmado / stock 0 / disponible 0   | OK        |
+| Transacciones abiertas tras cada EXEC      | 0                                                          | 0                                                          | OK        |

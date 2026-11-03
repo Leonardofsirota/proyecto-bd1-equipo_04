@@ -27,9 +27,12 @@ SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
 GO
 
--- dbo.fn_TotalPedido se crea en calcular_descuento_pedido/script.sql.
+-- dbo.fn_TotalPedido, dbo.fn_PorcentajeDescuentoPedido y dbo.fn_ImporteDescuento se
+-- crean en calcular_descuento_pedido/script.sql.
 -- SET NOEXEC ON hace que los lotes siguientes se compilen sin ejecutarse.
 IF OBJECT_ID(N'dbo.fn_TotalPedido', N'FN') IS NULL
+   OR OBJECT_ID(N'dbo.fn_PorcentajeDescuentoPedido', N'FN') IS NULL
+   OR OBJECT_ID(N'dbo.fn_ImporteDescuento', N'FN') IS NULL
    OR NOT EXISTS (SELECT 1 FROM dbo.PEDIDO)
 BEGIN
     RAISERROR(N'Faltan datos: ejecutar antes datos_prueba.sql y calcular_descuento_pedido/script.sql. El script se detuvo sin realizar cambios.', 16, 1);
@@ -350,10 +353,11 @@ IF OBJECT_ID(N'dbo.trg_PAGO_Alta', N'TR') IS NOT NULL
     DROP TRIGGER dbo.trg_PAGO_Alta;
 GO
 
--- Un pago nace Pendiente, por el total de un pedido Pendiente con la reserva vigente
--- y sin otro pago abierto (RN22, RN24, RN35). usp_IniciarPago valida lo mismo antes de
--- escribir, para respetar el orden de bloqueos: este control cubre el DML directo.
--- El total de un pedido sin renglones es 0, así que su pago siempre se rechaza.
+-- Un pago nace Pendiente, por el total con descuento de un pedido Pendiente con la
+-- reserva vigente y sin otro pago abierto (RN22, RN24, RN31, RN35). usp_IniciarPago
+-- valida lo mismo antes de escribir, para respetar el orden de bloqueos: este control
+-- cubre el DML directo. El total de un pedido sin renglones es 0, así que su pago
+-- siempre se rechaza.
 CREATE TRIGGER dbo.trg_PAGO_Alta
 ON dbo.PAGO
 AFTER INSERT
@@ -395,12 +399,17 @@ BEGIN
     )
         THROW 50233, 'trg_PAGO_Alta: el pedido ya tiene un pago pendiente o aprobado (RN24).', 1;
 
+    -- El mismo cálculo que usp_IniciarPago: el total menos el descuento de su tramo.
+    -- El control 50232 ya aseguró que el pedido está Pendiente, así que el porcentaje
+    -- no vale 0 por estar cancelado.
     IF EXISTS (
         SELECT 1
         FROM inserted AS I
-        WHERE I.importe <> dbo.fn_TotalPedido(I.pedido_id)
+        CROSS APPLY (SELECT dbo.fn_TotalPedido(I.pedido_id) AS total) AS T
+        WHERE I.importe <> T.total
+                         - dbo.fn_ImporteDescuento(T.total, dbo.fn_PorcentajeDescuentoPedido(I.pedido_id))
     )
-        THROW 50234, 'trg_PAGO_Alta: el importe no coincide con el total del pedido (RN22).', 1;
+        THROW 50234, 'trg_PAGO_Alta: el importe no coincide con el total con descuento del pedido (RN22, RN31).', 1;
 
     -- Mismo plazo que dbo.fn_VencimientoReserva sin un pago Pendiente. No se usa esa
     -- función porque aquí ya ve el pago nuevo como Pendiente y devolvería un plazo
