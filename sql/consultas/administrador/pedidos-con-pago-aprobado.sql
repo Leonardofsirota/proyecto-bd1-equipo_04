@@ -1,7 +1,8 @@
 ﻿/* Pedidos con pago aprobado: lista cada pedido cuyo pago fue aprobado,
    con el cliente, el estado del pedido, el importe pagado y el método de pago
    utilizado. Como un pedido tiene a lo sumo un pago aprobado (RN24), cada
-   pedido aparece una sola vez. */
+   pedido aparece una sola vez. El importe es lo cobrado: el total del pedido
+   menos su descuento (RN22 y RN32). */
 
 SELECT
     U.usuario_id,

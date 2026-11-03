@@ -14,7 +14,7 @@ El **Administrador**, para controlar los cobros del marketplace y cómo se pagar
 
 - **Uniones:** une el cliente con sus pedidos, cada pedido con su estado y con sus pagos, y cada pago con su estado y su método.
 - **Filtro:** el `WHERE` deja solo los pagos aprobados. Como un pedido tiene a lo sumo uno, ningún pedido se repite.
-- **Importe:** es el del pago aprobado, que coincide con el total del pedido (RN22).
+- **Importe:** es el del pago aprobado: el total del pedido menos su descuento (RN22, RN32). En un pedido de más de $100.000 es menor que la suma de sus renglones.
 
 ## 4. Resultado esperado
 
@@ -26,4 +26,4 @@ Devuelve 567 de los 600 pedidos: 555 entregados y 12 confirmados. Las primeras f
 |      2 | Ariel Castro      | Entregado         | $37.100 | Tarjeta de débito  |
 |      3 | Walter Raúl López | Entregado         | $38.400 | Tarjeta de débito  |
 
-Los 33 pedidos restantes son los que lista [Pedidos sin pago aprobado](pedidos-sin-pago-aprobado.md).
+Los importes suman $37.816.150, lo mismo que recaudan en 2026 [Ventas por mes](ventas-por-mes.md) y los reportes por vendedor y por categoría. Los 33 pedidos restantes son los que lista [Pedidos sin pago aprobado](pedidos-sin-pago-aprobado.md).
