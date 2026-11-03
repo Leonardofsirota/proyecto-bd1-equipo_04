@@ -1,13 +1,16 @@
 ﻿/* Pedidos sin pago aprobado: lista los pedidos que no tienen ningún pago
    aprobado, con el cliente, el estado del pedido, el total y el estado de su
-   último intento de pago ('Sin pago' si todavía no registra ninguno). */
+   último intento de pago ('Sin pago' si todavía no registra ninguno).
+
+   El total es el del pedido, sin descuento (RN17): el descuento solo se resta
+   al cobrar (RN32), y estos pedidos no se cobraron. */
 
 SELECT
     P.pedido_id,
     P.fecha_pedido,
     U.nombre + ' ' + U.apellido AS cliente,
     PE.nombre AS estado_pedido,
-    SUM(PD.cantidad * PD.precio_unitario) AS total_pedido,
+    SUM(PD.cantidad * PD.precio_unitario) AS total_sin_descuento, -- (RN17)
     -- Un pedido puede tener varios intentos rechazados o cancelados (RN24);
     -- se muestra solo el último para no repetir el pedido ni su total.
     COALESCE((

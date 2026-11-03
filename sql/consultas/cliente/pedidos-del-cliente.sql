@@ -4,7 +4,10 @@
    esperan la entrega y cuáles ya recibió.
 
    Incluye los pedidos cancelados y los que todavía no registran ningún pago
-   ('Sin pago'). Si el cliente no hizo pedidos, la consulta no devuelve filas. */
+   ('Sin pago'). Si el cliente no hizo pedidos, la consulta no devuelve filas.
+
+   El total es el del pedido, sin descuento (RN17): el descuento se resta al
+   cobrar (RN32), y lo cobrado en una venta figura en el comprobante. */
 
 DECLARE @cliente_id INT = 347;
 
@@ -13,7 +16,7 @@ SELECT
     P.fecha_pedido,
     PE.nombre AS estado_pedido,
     SUM(PD.cantidad) AS cantidad_libros,
-    SUM(PD.cantidad * PD.precio_unitario) AS total_pedido, -- calculado del detalle (RN17)
+    SUM(PD.cantidad * PD.precio_unitario) AS total_sin_descuento, -- calculado del detalle (RN17)
     COALESCE(UP.estado_pago, 'Sin pago') AS estado_pago,
     UP.metodo_pago,
     UP.fecha_pago -- solo si el último intento acreditó un cobro (RN25)
