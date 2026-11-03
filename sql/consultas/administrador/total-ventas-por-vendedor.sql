@@ -1,6 +1,11 @@
 ﻿/* Total de ventas por vendedor en un rango de fechas: pedidos, libros vendidos
    y monto recaudado por cada usuario que publicó los libros, en los pedidos
-   cuyo pago se aprobó dentro del rango, de menor a mayor monto. */
+   cuyo pago se aprobó dentro del rango, de menor a mayor monto.
+
+   El monto recaudado es lo cobrado, con el descuento del pedido (RN32): a cada
+   renglón se le resta su parte, calculada por dbo.fn_DescuentoRenglon
+   (calcular_descuento_pedido/script.sql, Etapa 5). Así, el total del reporte
+   coincide con el importe de los pagos aprobados del período. */
 
 -- Con DATETIME, el formato 'AAAA-MM-DD' depende del idioma de la sesión (en
 -- español se lee como 'AAAA-DD-MM'); DATEFORMAT ymd fija su interpretación.
@@ -14,7 +19,11 @@ SELECT
     U.nombre + ' ' + U.apellido AS vendedor,
     COUNT(DISTINCT P.pedido_id) AS cantidad_ventas,
     SUM(PD.cantidad) AS total_libros_vendidos,
-    SUM(PD.cantidad * PD.precio_unitario) AS total_recaudado
+    -- Subtotal del renglón menos su parte del descuento del pedido.
+    SUM(
+        PD.cantidad * PD.precio_unitario
+        - dbo.fn_DescuentoRenglon(PD.pedido_detalle_id)
+    ) AS total_recaudado
 FROM USUARIO U
 JOIN PUBLICACION PUB ON U.usuario_id = PUB.usuario_id
 JOIN PEDIDO_DETALLE PD ON PUB.publicacion_id = PD.publicacion_id

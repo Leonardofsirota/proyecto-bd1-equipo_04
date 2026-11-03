@@ -1,6 +1,11 @@
 ﻿/* Total de ventas por categoría de libro en un rango de fechas: pedidos,
    unidades vendidas y monto recaudado por categoría en los pedidos cuyo pago
-   se aprobó dentro del rango, de mayor a menor monto. */
+   se aprobó dentro del rango, de mayor a menor monto.
+
+   El monto recaudado es lo cobrado, con el descuento del pedido (RN32): a cada
+   renglón se le resta su parte, calculada por dbo.fn_DescuentoRenglon
+   (calcular_descuento_pedido/script.sql, Etapa 5). Así, el total del reporte
+   coincide con el importe de los pagos aprobados del período. */
 
 -- Con DATETIME, el formato 'AAAA-MM-DD' depende del idioma de la sesión (en
 -- español se lee como 'AAAA-DD-MM'); DATEFORMAT ymd fija su interpretación.
@@ -13,7 +18,11 @@ SELECT
     C.nombre AS categoria,
     COUNT(DISTINCT P.pedido_id) AS cantidad_pedidos,
     SUM(PD.cantidad) AS unidades_vendidas,
-    SUM(PD.cantidad * PD.precio_unitario) AS total_por_categoria
+    -- Subtotal del renglón menos su parte del descuento del pedido.
+    SUM(
+        PD.cantidad * PD.precio_unitario
+        - dbo.fn_DescuentoRenglon(PD.pedido_detalle_id)
+    ) AS total_por_categoria
 FROM CATEGORIA C
 JOIN LIBRO L ON C.categoria_id = L.categoria_id
 JOIN PUBLICACION PUB ON L.libro_id = PUB.libro_id

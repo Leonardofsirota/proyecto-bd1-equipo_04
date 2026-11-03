@@ -16,7 +16,7 @@ El **Administrador**, para detectar un método que concentre los rechazos (RN21,
 - **Uniones:** `LEFT JOIN` del método a sus pagos y de cada pago a su estado. El filtro de fechas va en el `ON`: en el `WHERE` eliminaría los métodos sin intentos en el período.
 - **Conteos:** `COUNT` cuenta los intentos, y un `SUM(CASE ...)` por estado separa cuántos terminaron de cada forma. Se cuentan intentos, no pedidos: un pedido puede aportar varios (RN24).
 - **Porcentaje de aprobados:** divide los aprobados por los intentos. `NULLIF` evita dividir por cero, y sin intentos el porcentaje queda vacío.
-- **Importe aprobado:** suma solo los pagos aprobados. Puede diferir de los reportes de ventas, que usan la fecha de aprobación: un pago iniciado al final del rango puede aprobarse en el período siguiente.
+- **Importe aprobado:** suma solo los pagos aprobados. El importe de cada pago es el total del pedido menos su descuento (RN32), lo mismo que suman como monto recaudado los reportes de ventas. Aun así, puede diferir de ellos, porque usan la fecha de aprobación: un pago iniciado al final del rango puede aprobarse en el período siguiente. En los datos de prueba ocurre una vez: el pago 532 se inició el 30 de septiembre y se aprobó el 1 de octubre, así que, con cualquiera de esos dos meses como rango, esta consulta y los reportes difieren en sus $65.200.
 - **Cobros sin venta:** un pago cancelado con fecha de acreditación (RN37) cuenta entre los cancelados y no suma al importe aprobado.
 
 ## 4. Resultado esperado
@@ -25,8 +25,8 @@ Con el año 2026 completo devuelve los tres métodos:
 
 | Método             | Intentos | Aprobados | Rechazados | Cancelados | Pendientes | % aprobados | Importe aprobado |
 | ------------------ | -------: | --------: | ---------: | ---------: | ---------: | ----------: | ---------------: |
-| Tarjeta de crédito |      310 |       255 |         44 |         11 |          0 |     82,26 % |      $18.439.300 |
-| Transferencia      |      205 |       154 |          0 |         47 |          4 |     75,12 % |      $11.117.700 |
-| Tarjeta de débito  |      203 |       158 |         33 |         12 |          0 |     77,83 % |       $9.282.000 |
+| Tarjeta de crédito |      310 |       255 |         44 |         11 |          0 |     82,26 % |      $17.911.730 |
+| Transferencia      |      205 |       154 |          0 |         47 |          4 |     75,12 % |      $10.775.525 |
+| Tarjeta de débito  |      203 |       158 |         33 |         12 |          0 |     77,83 % |       $9.128.895 |
 
-Los 718 intentos son todos los pagos cargados. En este rango, el importe aprobado suma $38.839.000, igual que [Ventas por mes](ventas-por-mes.md).
+Los 718 intentos son todos los pagos cargados. En este rango, el importe aprobado suma $37.816.150, igual que el monto recaudado de [Ventas por mes](ventas-por-mes.md), [Total de ventas por vendedor](total-ventas-por-vendedor.md) y [Total de ventas por categoría](total-ventas-por-categoria.md).

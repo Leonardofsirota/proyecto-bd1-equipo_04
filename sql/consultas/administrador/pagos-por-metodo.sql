@@ -3,11 +3,13 @@
    porcentaje de aprobados y el importe aprobado, para detectar un método que
    concentre los rechazos (RN21, RN23 y RN29).
 
-   El rango se aplica a la fecha de inicio del intento, porque los rechazados y
-   cancelados sin cobro no tienen fecha de acreditación (RN25). Por eso el
-   importe aprobado puede diferir del total de los reportes de ventas, que usan
-   la fecha de aprobación: un pago iniciado al final del rango puede aprobarse
-   en el período siguiente. */
+   El importe de cada pago es el total del pedido menos su descuento (RN32), el
+   mismo criterio con que los reportes de ventas calculan el monto recaudado.
+   El rango, en cambio, se aplica a la fecha de inicio del intento, porque los
+   rechazados y cancelados sin cobro no tienen fecha de acreditación (RN25).
+   Por eso el importe aprobado puede diferir del total de los reportes de
+   ventas, que usan la fecha de aprobación: un pago iniciado al final del rango
+   puede aprobarse en el período siguiente. */
 
 -- Con DATETIME, el formato 'AAAA-MM-DD' depende del idioma de la sesión (en
 -- español se lee como 'AAAA-DD-MM'); DATEFORMAT ymd fija su interpretación.

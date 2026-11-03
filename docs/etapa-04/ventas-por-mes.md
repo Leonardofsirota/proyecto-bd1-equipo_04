@@ -15,7 +15,8 @@ Muestra la evolución de las [ventas](casos-uso.md#3-qué-se-considera-una-venta
 
 - **Período:** se indica con `@fecha_desde` y `@fecha_hasta`, y se compara con la fecha de aprobación del pago, que es la [fecha de la venta](casos-uso.md#3-qué-se-considera-una-venta). Como esa fecha incluye la hora, el filtro llega hasta antes del día siguiente a `@fecha_hasta`, para tomar el último día completo.
 - **Uniones:** une los renglones con su pago y el estado de ese pago, y el `WHERE` deja solo el aprobado. A diferencia de los otros reportes, no usa `EXISTS`, porque necesita agrupar por la fecha del pago. Como un pedido tiene a lo sumo un pago aprobado (RN24), los renglones no se duplican.
-- **Agrupación:** `GROUP BY` por año y mes de la fecha de aprobación, así cada venta se cuenta en el mes en que se aprobó su pago. `COUNT(DISTINCT ...)` cuenta cada pedido una sola vez aunque tenga varios renglones; `SUM` acumula las unidades y la cantidad × precio unitario.
+- **Agrupación:** `GROUP BY` por año y mes de la fecha de aprobación, así cada venta se cuenta en el mes en que se aprobó su pago. `COUNT(DISTINCT ...)` cuenta cada pedido una sola vez aunque tenga varios renglones; `SUM` acumula las unidades y lo cobrado por cada renglón: la cantidad × precio unitario menos su parte del descuento del pedido.
+- **Descuento:** el descuento no modifica el total del pedido, pero reduce el importe cobrado (RN32). `dbo.fn_DescuentoRenglon` calcula la parte de cada renglón, igual que en [Total de ventas por vendedor](total-ventas-por-vendedor.md), y las partes de un pedido suman exactamente su descuento. Así, lo recaudado en un mes coincide con el importe de los pagos aprobados en ese mes. La función se crea en [`calcular_descuento_pedido/script.sql`](../../sql/tecnico/procedimientos_funciones/calcular_descuento_pedido/script.sql), de la Etapa 5, que debe ejecutarse antes que esta consulta.
 - **Promedio:** divide el monto recaudado del mes por su cantidad de ventas.
 
 ## 4. Resultado esperado
@@ -24,17 +25,17 @@ Con el año 2026 completo devuelve los 12 meses:
 
 | Mes        | Ventas | Unidades |  Recaudado | Promedio por venta |
 | ---------- | -----: | -------: | ---------: | -----------------: |
-| Enero      |     33 |       79 | $1.543.700 |         $46.778,79 |
-| Febrero    |     45 |       97 | $2.330.000 |         $51.777,78 |
-| Marzo      |     66 |      188 | $5.757.900 |         $87.240,91 |
-| Abril      |     45 |      124 | $3.011.700 |         $66.926,67 |
-| Mayo       |     47 |      119 | $2.887.300 |         $61.431,91 |
-| Junio      |     40 |       92 | $2.483.200 |         $62.080,00 |
-| Julio      |     54 |      136 | $3.607.400 |         $66.803,70 |
-| Agosto     |     46 |      112 | $3.157.800 |         $68.647,83 |
-| Septiembre |     45 |      115 | $3.812.600 |         $84.724,44 |
-| Octubre    |     46 |      123 | $3.145.900 |         $68.389,13 |
-| Noviembre  |     46 |      119 | $3.759.700 |         $81.732,61 |
-| Diciembre  |     54 |      127 | $3.341.800 |         $61.885,19 |
+| Enero      |     33 |       79 | $1.518.305 |         $46.009,24 |
+| Febrero    |     45 |       97 | $2.296.920 |         $51.042,67 |
+| Marzo      |     66 |      188 | $5.523.440 |         $83.688,48 |
+| Abril      |     45 |      124 | $2.948.630 |         $65.525,11 |
+| Mayo       |     47 |      119 | $2.833.735 |         $60.292,23 |
+| Junio      |     40 |       92 | $2.435.710 |         $60.892,75 |
+| Julio      |     54 |      136 | $3.537.430 |         $65.507,96 |
+| Agosto     |     46 |      112 | $3.082.525 |         $67.011,41 |
+| Septiembre |     45 |      115 | $3.691.300 |         $82.028,89 |
+| Octubre    |     46 |      123 | $3.063.175 |         $66.590,76 |
+| Noviembre  |     46 |      119 | $3.605.830 |         $78.387,61 |
+| Diciembre  |     54 |      127 | $3.279.150 |         $60.725,00 |
 
-Las 567 ventas del año son los pedidos que lista [Pedidos con pago aprobado](pedidos-con-pago-aprobado.md), y suman $38.839.000.
+Las 567 ventas del año son los pedidos que lista [Pedidos con pago aprobado](pedidos-con-pago-aprobado.md), y suman $37.816.150, lo mismo que los importes de sus pagos.
